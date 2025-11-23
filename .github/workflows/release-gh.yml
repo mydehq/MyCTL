@@ -77,7 +77,7 @@ jobs:
 
       - name: Create app tarball
         run: |
-          tar -czf app-${{ env.VERSION }}.tar.gz -C app .
+          tar -czf myctl-${{ env.VERSION }}.tar.gz -C app .
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
@@ -86,6 +86,6 @@ jobs:
           name: v${{ env.VERSION }}
           body_path: CHANGELOG.md
           prerelease: ${{ env.IS_PRERELEASE }}
-          files: app-${{ env.VERSION }}.tar.gz
+          files: myctl-${{ env.VERSION }}.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
