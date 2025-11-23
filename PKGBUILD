@@ -2,7 +2,7 @@
 
 pkgname=myctl
 pkgdesc="A powerful CLI to control Linux Desktop"
-pkgver=0.1.0
+pkgver=1.0.0
 pkgrel=1
 arch=('any')
 url="https://github.com/mydehq/${pkgname}"
@@ -18,8 +18,6 @@ depends=(
     'wob'
 )
 
-# Note: We assume your tarball extracts directly to current dir (tarbomb)
-# because of your previous 'tar -C release .' command.
 source=("${url}/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.gz")
 
 package() {

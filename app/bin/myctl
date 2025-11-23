@@ -19,8 +19,16 @@
 
 MYDE_DIR="$HOME/MyDE"
 MYDE_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/myde/myde.conf"
-LIB_DIR="$HOME/.local/lib/myctl"
-SRC_DIR="$HOME/.local/src/myctl"
+
+# Detect if this is a system-wide installation
+if [[ "$(realpath "${BASH_SOURCE[0]}")" == "/usr/bin/myctl" ]]; then
+    LIB_DIR="/usr/lib/myctl"
+    SRC_DIR="/usr/src/myctl"
+else
+    LIB_DIR="$HOME/.local/lib/myctl"
+    SRC_DIR="$HOME/.local/src/myctl"
+fi
+
 LOG_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/myde"
 MAX_VOLUME=153
 MAX_MIC=$MAX_VOLUME
