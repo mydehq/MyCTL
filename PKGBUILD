@@ -21,10 +21,13 @@ depends=(
 source=("${url}/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.gz")
 
 package() {
+
+    #shellcheck disable=SC2164,SC2154
     cd "${srcdir}"
 
     msg2 "Installing binaries..."
     for binary in bin/*; do
+        #shellcheck disable=SC2154
         install -Dm755 "$binary" "${pkgdir}/usr/bin/$(basename "$binary")"
     done
 
