@@ -4,9 +4,9 @@
 #  | |\/| | | | | |     | | | |
 #  | |  | | |_| | |___  | | | |___
 #  |_|  |_|\__, |\____| |_| |_____|
-#         |___/
+#          |___/
 #
-#  MyDE Controller - Control various functions of MyDE
+#  A powerful CLI to control your Linux Desktop
 
 
 # ~/.config/myde - /etc/myde
