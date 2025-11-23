@@ -32,6 +32,8 @@ commit_parsers = [
     # Skip Commits
     { message = "^chore\\(release\\)", skip = true },
     { message = "^debug", skip = true },
+    { message = "^ci", skip = true },
+    { message = "^test", skip = true },
 
     # 1. The Good Stuff (Features)
     # { message = "^(feat|features)", group = "<!-- 0 --> Features" },
@@ -49,13 +51,7 @@ commit_parsers = [
     { message = "^style", group = "<!-- 5 --> Styling" },
 
     # 5. Low Priority / Internal
-    { message = "^test", group = "<!-- 6 --> Testing" },
-    { message = "^ci", group = "<!-- 7 --> CI" },
-    { message = "^(chore|build)", group = "<!-- 8 --> Miscellaneous Tasks" },
-
-
-    # 6. Catch-all for lazy commits (No prefix)
-    { message = ".*", group = "<!-- 9 --> Other" },
+    { message = ".*", group = "<!-- 8 --> Miscellaneous Tasks" },
 ]
 
 protect_breaking_commits = false
