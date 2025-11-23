@@ -57,4 +57,4 @@ protect_breaking_commits = false
 
 filter_commits = false
 
-sort_commits = "oldest"
+sort_commits = "newest"
