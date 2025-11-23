@@ -15,6 +15,7 @@
 # ~/.local/src   - /usr/src
 # ~/.local/share - /usr/share
 
+
 # ======================== Config ===========================
 
 MYDE_DIR="$HOME/MyDE"
