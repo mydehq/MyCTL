@@ -9,13 +9,6 @@ on:
       - main
 
   workflow_dispatch:
-    inputs:
-      version:
-        description: "Override version (optional)"
-        required: false
-      release_body:
-        description: "Override Changelog (optional)"
-        required: false
 
 permissions:
   contents: write
@@ -33,12 +26,7 @@ jobs:
       - name: Get version from PKGBUILD
         id: get_version
         run: |
-          if [[ -n "${{ inputs.version }}" ]]; then
-            VER="${{ inputs.version }}"
-          else
-            # Source the file to get the variable properly
-            VER=$(source PKGBUILD && echo $pkgver)
-          fi
+          VER=$(source PKGBUILD && echo $pkgver)
 
           echo "VERSION=$VER" >> $GITHUB_ENV
 
