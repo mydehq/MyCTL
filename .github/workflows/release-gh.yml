@@ -2,11 +2,11 @@ name: Make GitHub Release
 
 on:
   push:
+    branches:
+      - main
     paths:
       - "PKGBUILD"
       - ".github/workflows/release-gh.yml"
-    branches:
-      - main
 
   workflow_dispatch:
 
