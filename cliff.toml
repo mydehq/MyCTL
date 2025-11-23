@@ -1,0 +1,60 @@
+# git-cliff ~ configuration file
+
+
+[changelog]
+
+body = """
+{% for group, commits in commits | group_by(attribute="group") %}
+    ### {{ group | upper_first }}
+
+    {% for commit in commits -%}
+        - {{ commit.message | upper_first }} ({{ commit.id | truncate(length=7, end="") }})
+    {% endfor -%}
+
+
+{% endfor %}
+"""
+
+trim = true
+
+[git]
+
+conventional_commits = true
+filter_unconventional = false
+split_commits = false
+
+commit_preprocessors = [
+    { pattern = '\((\w+\s)?#([0-9]+)\)', replace = "([#${2}](https://github.com/mydehq/MyCTL/issues/${2}))"},
+]
+
+commit_parsers = [
+    # 1. The Good Stuff (Features)
+    # { message = "^(feat|features)", group = "<!-- 0 --> Features" },
+    { message = "^feat",            group = "<!-- 0 -->🚀 Features" },
+
+    # 2. The Fixes
+    { message = "^fix", group = "<!-- 1 --> Bug Fixes" },
+
+    # 3. Improvements
+    { message = "^perf", group = "<!-- 2 --> Performance" },
+    { message = "^refactor", group = "<!-- 3 --> Refactor" },
+
+    # 4. Documentation & Styles
+    { message = "^(doc|docs)", group = "<!-- 4 --> Documentation" },
+    { message = "^style", group = "<!-- 5 --> Styling" },
+
+    # 5. Low Priority / Internal
+    { message = "^test", group = "<!-- 6 --> Testing" },
+    { message = "^ci", group = "<!-- 7 --> CI" },
+    { message = "^(chore|build)", group = "<!-- 8 --> Miscellaneous Tasks" },
+    { message = "^chore\\(release\\)", skip = true }, # Skip release commits
+
+    # 6. Catch-all for lazy commits (No prefix)
+    { message = ".*", group = "<!-- 9 --> Other" },
+]
+
+protect_breaking_commits = false
+
+filter_commits = false
+
+sort_commits = "oldest"
