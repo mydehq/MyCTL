@@ -1,4 +1,5 @@
 name: Update AUR Package
+run-name: Update AUR to ${{ github.event.release.tag_name }}
 
 on:
   release:
