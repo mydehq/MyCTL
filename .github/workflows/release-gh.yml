@@ -10,6 +10,10 @@ on:
 
   workflow_dispatch:
 
+concurrency:
+  group: gh-release
+  cancel-in-progress: true
+
 permissions:
   contents: write
 

@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
 
+  workflow_dispatch:
+
+concurrency:
+  group: update-aur
+  cancel-in-progress: true
+
 jobs:
   aur-release:
     runs-on: ubuntu-latest
