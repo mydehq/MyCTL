@@ -1,0 +1,55 @@
+name: Update AUR Package
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  aur-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get Version from Tag
+        id: get_version
+        run: |
+          # Strip the 'v' prefix from the tag
+          echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      - name: Update PKGBUILD and Checksums
+        run: |
+          docker run --rm -v "$PWD:/src" -w /src archlinux:base-devel sh -c '
+            # 1. Install utils
+            pacman -Sy --noconfirm pacman-contrib git
+
+            # 2. Update pkgver in PKGBUILD
+            # We use double quotes inside sed so the variable expands,
+            # but single quotes around sh -c to keep it safe.
+            sed -i "s/^pkgver=.*$/pkgver=${{ env.VERSION }}/" PKGBUILD
+
+            # 3. Reset pkgrel to 1
+            sed -i "s/^pkgrel=.*$/pkgrel=1/" PKGBUILD
+
+            # 4. Update Checksums
+            # This will download the tarball you just attached to the Release
+            # and calculate the SHA256 automatically.
+            updpkgsums
+
+            # 5. Generate .SRCINFO
+            makepkg --printsrcinfo > .SRCINFO
+
+            # 6. Fix Permissions
+            # Docker creates files as root. We must give them back to the GitHub Runner (1001:121)
+            chown -R 1001:121 .
+          '
+
+      - name: Publish to AUR
+        uses: KSXGitHub/github-actions-deploy-aur@v2.2.5
+        with:
+          pkgname: myctl
+          pkgbuild: ./PKGBUILD
+          commit_username: ${{ secrets.AUR_USERNAME }}
+          commit_email: ${{ secrets.AUR_EMAIL }}
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          commit_message: "Update to ${{ env.VERSION }}"
+          ssh_keyscan_types: rsa,dsa,ecdsa,ed25519
