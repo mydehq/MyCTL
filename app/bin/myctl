@@ -1,0 +1,554 @@
+#!/usr/bin/env bash
+#   __  __        ____ _____ _
+#  |  \/  |_   _ / ___|_   _| |
+#  | |\/| | | | | |     | | | |
+#  | |  | | |_| | |___  | | | |___
+#  |_|  |_|\__, |\____| |_| |_____|
+#         |___/
+#
+#  MyDE Controller - Control various functions of MyDE
+
+
+# ~/.config/myde - /etc/myde
+# ~/.local/bin   - /usr/bin
+# ~/.local/lib   - /usr/lib
+# ~/.local/src   - /usr/src
+# ~/.local/share - /usr/share
+
+# ======================== Config ===========================
+
+MYDE_DIR="$HOME/MyDE"
+MYDE_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/myde/myde.conf"
+LIB_DIR="$HOME/.local/lib/myctl"
+SRC_DIR="$HOME/.local/src/myctl"
+LOG_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/myde"
+MAX_VOLUME=153
+MAX_MIC=$MAX_VOLUME
+
+#========================== Main Logic =========================
+
+THIS_PATH="$(realpath "${BASH_SOURCE[0]}")"
+
+export MYDE_DIR LIB_DIR LOG_LEVEL THIS_PATH
+
+# Dictionaries
+declare -A cmd_map IMPORTED_LIBS
+
+! [ -d "$LOG_DIR" ] && mkdir -p "$LOG_DIR"
+
+# shellcheck source=/dev/null
+source "$LIB_DIR"/_utils.sh && IMPORTED_LIBS[$(realpath "$LIB_DIR"/_utils.sh)]=1 || {
+    echo "FATAL: Failed to source Utils"
+    exit 1
+}
+
+[[ "$#" -eq 0 ]] && {
+    self help
+    exit 1
+}
+
+
+case "$1" in
+
+    help|'-h'|--help)
+        cmd_map=(
+            [cmd]="myctl"
+            [get]="Retrieve info about current system config."
+            [pkg]="Package Management utils"
+            [reload]="Reload MyDE configuration"
+            [set]="Set configuration options (not yet implemented)"
+            [show]="Show various utility dialougs"
+        )
+        help_menu
+        ;;
+
+    # ==================== Get ====================
+    get)
+        shift # $1 = arg2
+        case "$1" in
+            help)
+                cmd_map=(
+                    [cmd]="get"
+                    [desktop-file]="Get desktop file path of an application"
+                    [desktop-filename]="Get desktop file name of an application"
+                    [distro]="Get distro name/info"
+                    [conf]="Get value of given key in MyDE conf file"
+                    [mic]="Get microphone/source volume"
+                    [snip]="Get screenshot of selection/window/desktop"
+                    [theme]="Get current theme of MyDE or specific components"
+                    [volume]="Get speaker/sink volume"
+                )
+                help_menu
+                ;;
+            desktop-file)
+                shift
+                import_lib "get-desktop-file"
+                get-desktop-file "$1"
+                ;;
+            desktop-filename)
+                shift
+                import_lib "get-desktop-file"
+                get-desktop-file -n "$1"
+                ;;
+            distro)
+                shift
+                import_lib "pkg-utils"
+                cmd_map[cmd]="get distro"
+                case "$1" in
+                    help)
+                        cmd_map=(
+                            [name]="get current distro name. (default)"
+                            [base]="get current distro base."
+                        )
+                        help_menu
+                        ;;
+                    ""|name)
+                        get-distro
+                        ;;
+                    base)
+                        shift
+                        cmd_map[cmd]="get distro base"
+                        case "$1" in
+                            help)
+                                cmd_map[cmd]="get distro base"
+                                cmd_map[\"\"]="Get base distro of current distro"
+                                cmd_map[\<distro_name\>]="Get base distro of specified distro"
+                                help_menu
+                                ;;
+                            "")
+                                get-distro-base
+                                ;;
+                            *)
+                                get-distro-base "$1"
+                        esac
+                        ;;
+                    *)
+                        invld_cmd "$1" && self "${cmd_map[cmd]}" help
+                        exit 1
+                        ;;
+                esac
+                ;;
+            conf)
+                shift
+                cmd_map[cmd]="get conf"
+                read-conf "$1"
+                ;;
+            cursor)
+                shift
+                cmd_map[cmd]="get cursor"
+                case "$1" in
+                    help)
+                        cmd_map=(
+                            [name]="get current cursor theme name."
+                            [size]="get current cursor size."
+                        )
+                        help_menu
+                        ;;
+                    theme)
+                        import_lib "gtk-utils"
+                        get-gtk-cursor-theme
+                        ;;
+                    size)
+                        import_lib "gtk-utils"
+                        get-gtk-cursor-size
+                        ;;
+                    ""|*)
+                        invld_cmd "$1" && self get cursor help
+                        exit 1
+                        ;;
+                esac
+                ;;
+            mic)
+                shift
+                cmd_map[cmd]="get mic"
+                case "$1" in
+                    help)
+                        cmd_map=(
+                            [usage]="myctl get mic"
+                        )
+                        help_menu
+                        ;;
+                    mute)
+                        import_lib "audio-utils"
+                        get-mute -m
+                        ;;
+                    "")
+                        import_lib "audio-utils"
+                        get-volume -m
+                        ;;
+                    *)
+                        invld_cmd "$1" && self get mic help
+                        exit 1
+                        ;;
+                esac
+                ;;
+            snip)
+                cmd_map[cmd]="get snip"
+                cmd_map[usage]="myctl get snip [area|screen|active]"
+                shift
+                case $1 in
+                    help)
+                        cmd_map=(
+                            [area]="Take Screenshot of area (default)"
+                            [active]="Take Screenshot of active window"
+                            [screen]="Take Screenshot of screen"
+                        )
+                        help_menu
+                        ;;
+                    active|screen)
+                        cmd_map[cmd]="get snip $1"
+                        cmd_map[usage]="myctl get snip $1"
+                        import_lib "snipping"
+                        snip "$1"
+                        ;;
+                    ""|area)
+                        cmd_map[cmd]="get snip area"
+                        import_lib "snipping"
+                        snip area
+                        ;;
+                    *)
+                        invld_cmd "$1" && self get snip help
+                        exit 1
+                        ;;
+                esac
+                ;;
+            theme)
+                shift
+                cmd_map=(
+                    [cmd]="get theme"
+                    [gtk]="get current gtk color theme."
+                    [qt]="get current qt color theme. (not yet implemented)"
+                    [rofi]="get current rofi color theme."
+                )
+                case "$1" in
+                    help)
+                        help_menu
+                        ;;
+                    rofi)
+                        import_lib "rofi-utils"
+                        get-rofi-theme
+                        ;;
+                    gtk)
+                        import_lib "gtk-utils"
+                        get-gtk-theme
+                        ;;
+                    qt|kde)
+                        log.nyi   #TODO
+                        ;;
+                    ""|*)
+                        invld_cmd "$1" && self get theme help
+                        exit 1
+                        ;;
+                esac
+                ;;
+            volume)
+                shift
+                case "$1" in
+                    help)
+                        cmd_map=(
+                            [cmd]="get volume"
+                            [usage]="myctl get volume"
+                        )
+                        help_menu
+                        ;;
+                    mute)
+                        import_lib "audio-utils"
+                        get-mute
+                        ;;
+                    "")
+                        import_lib "audio-utils"
+                        get-volume
+                        ;;
+                    *)
+                        invld_cmd "$1" && self get volume help
+                        exit 1
+                        ;;
+                esac
+                ;;
+            ""|*)
+                invld_cmd "$1" && self get help
+                exit 1
+                ;;
+        esac
+        ;;
+
+    #======================= pkg ====================
+    pkg)
+        cmd_map[cmd]="pkg"
+        shift
+        case "$1" in
+            help)
+                cmd_map=(
+                    [add]="Install a package(s)"
+                    [rm]="Remove a package(s)"
+                    [ignore]="Ignore a package(s) (ignore while updating)"
+                    [search]="Search for a package"
+                    [sync]="Sync all packages with db"
+                    [update]="Update package(s)"
+                )
+                help_menu
+                ;;
+            "")
+                invld_cmd && self pkg help
+                exit 1
+                ;;
+            add)
+               import_lib "pkg-utils"
+               shift
+               ;;
+            rm)
+               shift
+               ;;
+            ignore)
+               shift
+               ;;
+            search)
+               shift
+               ;;
+            sync)
+               shift
+               ;;
+            update)
+               shift
+               ;;
+            *)
+                invld_cmd "$1" && self help
+                exit 1
+                ;;
+        esac
+        ;;
+
+    # ==================== reload ====================
+    reload)
+        shift
+        case "$1" in
+            help)
+                cmd_map=(
+                    [cmd]="reload"
+                )
+                help_menu
+                ;;
+            "")
+                hyprctl reload > /dev/null
+                log.success "myde configuration reloaded."
+                ;;
+            *)
+                invld_cmd "$1" && self help
+                exit 1
+                ;;
+        esac
+        ;;
+
+    # ==================== set ====================
+    set)
+        shift
+        case "$1" in
+            help)
+                cmd_map=(
+                    [cmd]="set"
+                    [mic]="set microphone/source volume or mute"
+                    [terminal]="Set Default Terminal"
+                    [theme]="set theme for entire myde or specific components."
+                    [volume]="set speaker/sink volume or mute"
+                )
+                help_menu
+                ;;
+            mic)
+                shift
+                case "$1" in
+                    help)
+                        cmd_map=(
+                            [cmd]="set mic"
+                            [usage]="myctl set mic [+|-]<level>"
+                        )
+                        help_menu
+                        ;;
+                    mute)
+                      import_lib "audio-utils"
+                      set-mute
+                      ;;
+                    unmute)
+                      import_lib "audio-utils"
+                      set-mute -m -u
+                      ;;
+                    toggle)
+                      import_lib "audio-utils"
+                      set-mute -m -t
+                      ;;
+                    "")
+                        self set mic help
+                        exit 1
+                        ;;
+                    *)
+                        import_lib "audio-utils"
+                        set-volume -m "$1"
+                        ;;
+                esac
+                ;;
+            terminal)
+                import_lib "get-desktop-file"
+                [ -n "$TERMINAL" ] || log.fatal "Terminal not set"
+                term_desktop="$(get-desktop-file -n "$TERMINAL")"
+                handlr set x-scheme-handler/terminal "$term_desktop" &> /dev/null
+                kwriteconfig6 --file "$HOME/.config/kdeglobals" --group General --key TerminalService "$term_desktop"
+                ;;
+            theme)
+                shift # $1 = arg3
+                case "$1" in
+                    help)
+                        cmd_map=(
+                            [cmd]="set theme"
+                            [gtk]="set gtk color theme."
+                            [rofi]="set rofi color theme."
+                        )
+                        help_menu
+                        ;;
+                    rofi)
+                        shift
+                        import_lib "rofi-utils"
+                        set-rofi-theme "$1"
+                        ;;
+                    gtk)
+                        shift
+                        import_lib "gtk-utils"
+                        set-gtk-theme "$1"
+                        ;;
+                    ""|*)
+                        invld_cmd "$1" && self set theme help
+                        exit 1
+                        ;;
+                esac
+                ;;
+            volume)
+                shift
+                case "$1" in
+                    help)
+                        cmd_map=(
+                            [cmd]="set volume"
+                            [usage]="myctl set volume [+|-]<level>"
+                        )
+                        help_menu
+                        ;;
+                    mute)
+                      import_lib "audio-utils"
+                      set-mute
+                      ;;
+                    unmute)
+                      import_lib "audio-utils"
+                      set-mute -u
+                      ;;
+                    toggle)
+                      import_lib "audio-utils"
+                      set-mute -t
+                      ;;
+                    "")
+                      self set volume help
+                      exit 1
+                      ;;
+                    *)
+                      import_lib "audio-utils"
+                      set-volume "$1"
+                      ;;
+                esac
+                ;;
+            ""|*)
+                invld_cmd "$1" && self set help
+                exit 1
+                ;;
+        esac
+        ;;
+
+    # =================== setup ====================
+    setup)
+        shift
+        cmd_map[cmd]="setup"
+        case "$1" in
+            help)
+                cmd_map=(
+                    [wob]="Setup wob osd background Server"
+                )
+                help_menu
+                ;;
+            wob-daemon)
+                cmd_map[cmd]="setup wob"
+                import_lib "wob-osd"
+                start-wob-daemon
+                ;;
+            ""|*)
+                invld_cmd "$1" && self setup help
+                exit 1
+                ;;
+        esac
+        ;;
+
+    # ==================== show ====================
+    show)
+        shift
+        case "$1" in
+            help)
+                cmd_map=(
+                    [cmd]="show"
+                    [keybinds]="Show keybinds hint window."
+                    [power-menu]="Show power menu window."
+                    [wifi-menu]="Show wifi menu window."
+                    [wobar]="Show wob osd bar"
+                )
+                help_menu
+                ;;
+            keybinds)
+                import_lib "keybinds-menu"
+                show-keybinds-menu
+                ;;
+            'power-menu')
+                import_lib "power-menu"
+                show-power-menu
+                ;;
+            tui)
+                shift
+                cmd_map=(
+                    [cmd]="show tui"
+                    [usage]="myctl show tui [-t <task>] [-T <terminal>] [-c <class>] [-e <exec>]"
+                    [-c, --class]="Application class for the terminal window"
+                    [-e, --exec]="Command to run"
+                    [-t, --term]="Terminal emulator to use (default: $TERMINAL)"
+                )
+                import_lib "tui-app"
+                open-tui "$@"
+                ;;
+            'wifi-menu')
+                eval "$(self get conf wifi_menu)"
+                ;;
+            wobar)
+                shift
+                cmd_map=(
+                    [cmd]="show wobar"
+                    [usage]="myctl show wobar <level>"
+                )
+                case "$1" in
+                    help)
+                        help_menu
+                        exit 0
+                        ;;
+                    "")
+                        invld_cmd && self show wobar help
+                        exit 1
+                        ;;
+                    *)
+                        import_lib "wob-osd"
+                        show-wobar "$1"
+                        ;;
+                esac
+                ;;
+            ""|*)
+                invld_cmd "$1" && self show help
+                exit 1
+                ;;
+        esac
+        ;;
+
+    # ==================== default ====================
+    ""|*)
+        invld_cmd "$1" && self help
+        exit 1
+        ;;
+esac

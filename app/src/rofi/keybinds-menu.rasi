@@ -1,0 +1,117 @@
+/**
+ * MyDE Keybinds Menu Theme
+ *
+ * A beautiful dark theme for the MyDE keybinds rofi menu
+ * Uses semantic variables for easy theme switching
+ *
+ */
+
+configuration {
+    show-icons: false;
+    disable-history: true;
+    click-to-exit: true;
+    location: 0;
+}
+
+
+/* ================= Styling ================= */
+
+@import "~/.config/rofi/config.rasi"
+
+* {
+    /* Theme Variables */
+    accent-color: @active;
+    background-color: transparent;
+    text-color: @foreground;
+}
+
+window {
+    width: 83%;
+    height: 95%;
+    background-color: @background;
+    border: 2px solid;
+    border-color: @active;
+    padding: 0px;
+}
+
+mainbox {
+    background-color: transparent;
+    children: [inputbar, listview];
+    spacing: 0px;
+    padding: 0px;
+}
+
+inputbar {
+    background-color: @background;
+    text-color: @foreground;
+    padding: 8px;
+    border-radius: 6px;
+    margin: 8px 12px 6px 12px;
+    children: [prompt, entry];
+}
+
+prompt {
+    background-color: @accent-color;
+    text-color: @background-alt;
+    padding: 6px 12px;
+    border-radius: 4px;
+    margin: 0px 10px 0px 0px;
+    font: @font-bold;
+    vertical-align: 0.5;
+}
+
+entry {
+    background-color: transparent;
+    text-color: @foreground;
+    placeholder: "Type to search keybinds...";
+    placeholder-color: @disabled;
+    expand: true;
+    vertical-align: 0.5;
+}
+
+listview {
+    cycle: false;
+    /*fixed-height: false;*/
+    background-color: transparent;
+    columns: 1;
+    margin: 8px 40px 12px 40px;
+    /*spacing: -6px;*/
+    scrollbar: true;
+}
+
+element {
+    background-color: inherit;
+    text-color: @foreground;
+    padding: 4.5px 16px;
+    border-radius: 1px;
+    spacing: 0px;
+}
+
+element.selected {
+    background-color: @accent-color;
+    text-color: @background;
+    border-radius: 4px;
+    padding: 8px 12px ;
+}
+
+/*element.alternate {
+    background-color: @background-alt;
+    text-color: @foreground;
+}*/
+
+element-text {
+    background-color: inherit;
+    text-color: inherit;
+    expand: true;
+    vertical-align: 0.5;
+}
+
+
+/* Scrollbar styling */
+scrollbar {
+    width: 6px;
+    background-color: @background-alt;
+    handle-color: @accent-color;
+    border-radius: 3px;
+    margin: 0px 4px 0px 0px;
+}
