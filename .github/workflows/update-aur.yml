@@ -1,9 +1,8 @@
 name: Update AUR Package
 
 on:
-  release:
-    push:
-    # types: [published]
+  push:
+    branches: [main]
 
 jobs:
   aur-release:
