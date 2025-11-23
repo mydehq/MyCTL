@@ -28,6 +28,11 @@ commit_preprocessors = [
 ]
 
 commit_parsers = [
+
+    # Skip Commits
+    { message = "^chore\\(release\\)", skip = true },
+    { message = "^debug", skip = true },
+
     # 1. The Good Stuff (Features)
     # { message = "^(feat|features)", group = "<!-- 0 --> Features" },
     { message = "^feat",            group = "<!-- 0 -->🚀 Features" },
@@ -47,7 +52,7 @@ commit_parsers = [
     { message = "^test", group = "<!-- 6 --> Testing" },
     { message = "^ci", group = "<!-- 7 --> CI" },
     { message = "^(chore|build)", group = "<!-- 8 --> Miscellaneous Tasks" },
-    { message = "^chore\\(release\\)", skip = true }, # Skip release commits
+
 
     # 6. Catch-all for lazy commits (No prefix)
     { message = ".*", group = "<!-- 9 --> Other" },

@@ -2,7 +2,8 @@ name: Update AUR Package
 
 on:
   release:
-    types: [published]
+    push:
+    # types: [published]
 
 jobs:
   aur-release:
