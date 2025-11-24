@@ -5,7 +5,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Version](https://img.shields.io/badge/version-1.0.4-green.svg)](https://github.com/mydehq/MyCTL/releases)
 
-MyCTL is a comprehensive command-line interface tool designed to provide unified control over various aspects of your Linux desktop environment. It offers a distro-agnostic approach to system management with support for audio control, theme management, package management, screenshot utilities, and much more.
+MyCTL is a standalone command-line interface tool that provides a unified way to control common Linux desktop operations. It offers audio control, theme management, distro-agnostic package management, screenshot utilities, interactive menus, and more. While it integrates seamlessly with the MyDE desktop environment, MyCTL works independently on any Linux system.
 
 ## Features
 
@@ -31,9 +31,9 @@ MyCTL is a comprehensive command-line interface tool designed to provide unified
 - Integration with screenshotting tools
 
 ### 🚀 System Control
-- Reload desktop environment configuration
-- Terminal emulator configuration
-- Desktop file management
+- Configuration reload (Hyprland compositor support)
+- Default terminal emulator setup
+- Desktop file management and queries
 - Application launcher integration
 
 ### 🎯 Interactive Menus
@@ -218,7 +218,7 @@ myctl show tui [-t <terminal>] [-c <class>] [-e <exec>]
 ### System Management
 
 ```bash
-# Reload desktop environment configuration
+# Reload configuration (Hyprland compositor)
 myctl reload
 
 # Setup WOB daemon for visual feedback
@@ -304,5 +304,5 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 
 ## Acknowledgments
 
-- Part of the MyDE (My Desktop Environment) ecosystem
+- Integrates seamlessly with [MyDE](https://github.com/mydehq) (My Desktop Environment) but works standalone
 - Built with love for the Linux community
