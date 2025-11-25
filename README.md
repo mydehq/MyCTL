@@ -3,19 +3,22 @@
   <p><b>A powerful CLI to control your Linux Desktop</b></p>
 </div>
 
-MyCTL is a cli tool that provides a unified way to control common Linux desktop operations. It offers audio control, theme management, distro-agnostic package management, screenshot utilities, interactive menus, and more.
-<br>
-While it integrates seamlessly with the MyDE desktop environment, MyCTL works independently on any Linux system.
+MyCTL is a cli tool that provides a unified way to control common Linux desktop operations. It offers audio control, theme management, distro-agnostic package management, screenshot utilities, interactive menus, and more. While it integrates seamlessly with the MyDE desktop environment, MyCTL works independently on any Linux system.
 
 ---
 
-## Usage
-
-For Usage & Configuration, visit [Documentation](https://mydehq.github.io/MyWiki/docs/user-guide/myctl)
-
 ## Installation
 
-### Arch Linux (AUR)
+Install Required dependencies:
+
+- `bash` - Shell interpreter
+- `gawk` - Text processing
+- `sed` - Stream editor
+- `grep` - Pattern matching
+- `rofi` - Application launcher and menu system
+- `wob` - Wayland overlay bar for visual feedback
+
+### Arch Linux
 
 The package is available on the AUR as `myctl`:
 
@@ -41,17 +44,6 @@ makepkg
 sudo pacman -U myctl-*.pkg.tar.zst
 ```
 
-### Dependencies
-
-Install Required dependencies:
-
-- `bash` - Shell interpreter
-- `gawk` - Text processing
-- `sed` - Stream editor
-- `grep` - Pattern matching
-- `rofi` - Application launcher and menu system
-- `wob` - Wayland overlay bar for visual feedback
-
 ### From Source
 
 ```bash
@@ -60,7 +52,11 @@ git clone https://github.com/mydehq/MyCTL && cd MyCTL
 bash install.sh
 ```
 
-## 🔗 Related Resources
+## Usage
+
+For Usage & Configuration, visit [Documentation](https://mydehq.github.io/mywiki/docs/user-guide/myctl)
+
+## Related Resources
 
 - **Main Repository**: [mydehq/MyDE](https://github.com/mydehq/MyDE)
 - **Wiki Repository**: [mydehq/MyWiki](https://github.com/mydehq/MyWiki)
