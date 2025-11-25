@@ -6,7 +6,7 @@ shopt -s expand_aliases
 #--------------------
 
 # extract_method_names <lib_file_path>
-extract_method_names() {
+extract-method-names() {
     local file_path="$1"
     local awk_script="${SRC_DIR}/extract-method-names.awk"
 
@@ -32,14 +32,14 @@ extract_method_names() {
 
 #-------------------
 
-# export_lib_methods <lib_file_path>
-export_lib_methods() {
+# export-lib-methods <lib_file_path>
+export-lib-methods() {
     local file_path="$1"
 
     while IFS= read -r method_name; do
         [ -n "$method_name" ] && \
         export -f $method_name
-    done < <(extract_method_names "$file_path")
+    done < <(extract-method-names "$file_path")
 }
 
 #--------------------
@@ -50,7 +50,7 @@ for lib_name in logger import-lib; do
 
     if [[ -f "$_LIB_PATH" ]]; then
         if source "$_LIB_PATH"; then
-            export_lib_methods "$_LIB_PATH"
+            export-lib-methods "$_LIB_PATH"
             IMPORTED_LIBS["$(realpath "$_LIB_PATH")"]=1
         else
             echo "FATAL: Failed to source ${lib_name} from '$_LIB_PATH'" >&2
@@ -65,7 +65,7 @@ done
 #------------------
 
 # shellcheck disable=SC2142
-alias shift_arg='shift && [ -n "$1" ]'
+alias shift-arg='shift && [ -n "$1" ]'
 
 #------------------
 
@@ -75,7 +75,7 @@ self() {
 
 #---------------
 
-run_script() {
+run-script() {
     local script_path="$1"
 
     shift  # Shift to skip the 1st argument (script path)
@@ -90,7 +90,7 @@ run_script() {
 
 #---------------
 
-invld_cmd() {
+invalid-cmd() {
     local unknown_cmd="$1"
     echo "" >&2
 
@@ -103,7 +103,7 @@ invld_cmd() {
 
 #---------------
 
-help_menu() {
+help-menu() {
     local command="${cmd_map[cmd]}"
 
     ! [ ${cmd_map[usage]+_} ] && {

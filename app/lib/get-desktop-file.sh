@@ -7,6 +7,8 @@
 #   Finds desktop files by command name.
 #   Searches user, system, and flatpak locations.
 #
+# TODO: Make cache file to list scanned entries
+#
 # FLAGS:
 #   -n, --name    Output just filename instead of full path (default: full path)
 

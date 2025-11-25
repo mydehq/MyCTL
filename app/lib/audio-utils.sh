@@ -84,7 +84,7 @@ set-mute() {
                 action="toggle"
                 ;;
             *)
-                invld_cmd && help_menu
+                invalid-cmd && help-menu
                 ;;
         esac
         shift

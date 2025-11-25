@@ -1,5 +1,5 @@
 
-import_lib() {
+import-lib() {
     local mode="import"
     local lib_files=()
     local target_paths=()
@@ -24,13 +24,13 @@ import_lib() {
                 ;;
             --help|-h)
                 cat << 'EOF'
-                    import_lib - Import library files with tracking
+                    import-lib - Import library files with tracking
 
                 Usage:
-                    import_lib [library1] [library2]        Import one or more libraries
-                    import_lib --check|-c <library>         Check if library is imported
-                    import_lib --list|-l                    List all imported libraries
-                    import_lib --help|-h                    Show this help
+                    import-lib [library1] [library2]        Import one or more libraries
+                    import-lib --check|-c <library>         Check if library is imported
+                    import-lib --list|-l                    List all imported libraries
+                    import-lib --help|-h                    Show this help
 EOF
                 return 0
                 ;;
@@ -150,9 +150,9 @@ EOF
                             while IFS= read -r func_name; do
                                 if [[ -n "$func_name" ]]; then
                                     log.debug "Exporting function: $func_name"
-                                    export -f $func_name
+                                    export -f "$func_name"
                                 fi
-                            done < <(extract_method_names "$p")
+                            done < <(extract-method-names "$p")
 
                             IMPORTED_LIBS["$resolved_path"]=1
                             found=true

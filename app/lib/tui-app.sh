@@ -43,15 +43,15 @@ open-tui() {
     while [[ $# -gt 0 ]]; do
         case "$1" in
             -t|--term)
-                shift_arg || { log.error "No terminal name specified after '-t|--term'"; help_menu; return 1; }
+                shift-arg || { log.error "No terminal name specified after '-t|--term'"; help-menu; return 1; }
                 terminal_cmd="$1"
                 ;;
             -c|--class)
-                shift_arg || { log.error "No class name specified after '-c|--class'"; help_menu; return 1; }
+                shift-arg || { log.error "No class name specified after '-c|--class'"; help-menu; return 1; }
                 term_class="$1"
                 ;;
             --|'-e'|--exec)
-                shift_arg || { log.error "No command specified after '-e|--exec'"; return 1; }
+                shift-arg || { log.error "No command specified after '-e|--exec'"; return 1; }
                 exec_cmd="$*"
                 break
                 ;;
@@ -62,11 +62,11 @@ open-tui() {
                 float_win=true
                 ;;
             -h|--help|help)
-                help_menu
+                help-menu
                 ;;
             -*)
                 log.error "Unknown option: $1"
-                help_menu
+                help-menu
                 return 1
                 ;;
             *)
@@ -86,13 +86,13 @@ open-tui() {
     # Validate required arguments
     if [[ -z "$exec_cmd" ]]; then
         log.error "No command specified to execute. Use -e/--exec or pass the command after '--'."
-        help_menu
+        help-menu
         return 1
     fi
 
     if ! command -v "$terminal_bin" >/dev/null 2>&1; then
         log.error "Terminal '$terminal_bin' not found in PATH."
-        help_menu
+        help-menu
         return 1
     fi
 

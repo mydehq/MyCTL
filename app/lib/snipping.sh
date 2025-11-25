@@ -1,6 +1,6 @@
 #!/bin/env bash
 
-import_lib "hyprlang-utils"
+import-lib "hyprlang-utils"
 
 #============= Configuration =============#
 

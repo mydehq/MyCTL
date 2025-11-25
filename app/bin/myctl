@@ -68,7 +68,7 @@ case "$1" in
             [set]="Set configuration options (not yet implemented)"
             [show]="Show various utility dialougs"
         )
-        help_menu
+        help-menu
         ;;
 
     # ==================== Get ====================
@@ -87,21 +87,21 @@ case "$1" in
                     [theme]="Get current theme of MyDE or specific components"
                     [volume]="Get speaker/sink volume"
                 )
-                help_menu
+                help-menu
                 ;;
             desktop-file)
                 shift
-                import_lib "get-desktop-file"
+                import-lib "get-desktop-file"
                 get-desktop-file "$1"
                 ;;
             desktop-filename)
                 shift
-                import_lib "get-desktop-file"
+                import-lib "get-desktop-file"
                 get-desktop-file -n "$1"
                 ;;
             distro)
                 shift
-                import_lib "pkg-utils"
+                import-lib "pkg-utils"
                 cmd_map[cmd]="get distro"
                 case "$1" in
                     help)
@@ -109,7 +109,7 @@ case "$1" in
                             [name]="get current distro name. (default)"
                             [base]="get current distro base."
                         )
-                        help_menu
+                        help-menu
                         ;;
                     ""|name)
                         get-distro
@@ -122,7 +122,7 @@ case "$1" in
                                 cmd_map[cmd]="get distro base"
                                 cmd_map[\"\"]="Get base distro of current distro"
                                 cmd_map[\<distro_name\>]="Get base distro of specified distro"
-                                help_menu
+                                help-menu
                                 ;;
                             "")
                                 get-distro-base
@@ -132,7 +132,7 @@ case "$1" in
                         esac
                         ;;
                     *)
-                        invld_cmd "$1" && self "${cmd_map[cmd]}" help
+                        invalid-cmd "$1" && self "${cmd_map[cmd]}" help
                         exit 1
                         ;;
                 esac
@@ -151,18 +151,18 @@ case "$1" in
                             [name]="get current cursor theme name."
                             [size]="get current cursor size."
                         )
-                        help_menu
+                        help-menu
                         ;;
                     theme)
-                        import_lib "gtk-utils"
+                        import-lib "gtk-utils"
                         get-gtk-cursor-theme
                         ;;
                     size)
-                        import_lib "gtk-utils"
+                        import-lib "gtk-utils"
                         get-gtk-cursor-size
                         ;;
                     ""|*)
-                        invld_cmd "$1" && self get cursor help
+                        invalid-cmd "$1" && self get cursor help
                         exit 1
                         ;;
                 esac
@@ -175,18 +175,18 @@ case "$1" in
                         cmd_map=(
                             [usage]="myctl get mic"
                         )
-                        help_menu
+                        help-menu
                         ;;
                     mute)
-                        import_lib "audio-utils"
+                        import-lib "audio-utils"
                         get-mute -m
                         ;;
                     "")
-                        import_lib "audio-utils"
+                        import-lib "audio-utils"
                         get-volume -m
                         ;;
                     *)
-                        invld_cmd "$1" && self get mic help
+                        invalid-cmd "$1" && self get mic help
                         exit 1
                         ;;
                 esac
@@ -202,21 +202,21 @@ case "$1" in
                             [active]="Take Screenshot of active window"
                             [screen]="Take Screenshot of screen"
                         )
-                        help_menu
+                        help-menu
                         ;;
                     active|screen)
                         cmd_map[cmd]="get snip $1"
                         cmd_map[usage]="myctl get snip $1"
-                        import_lib "snipping"
+                        import-lib "snipping"
                         snip "$1"
                         ;;
                     ""|area)
                         cmd_map[cmd]="get snip area"
-                        import_lib "snipping"
+                        import-lib "snipping"
                         snip area
                         ;;
                     *)
-                        invld_cmd "$1" && self get snip help
+                        invalid-cmd "$1" && self get snip help
                         exit 1
                         ;;
                 esac
@@ -231,21 +231,21 @@ case "$1" in
                 )
                 case "$1" in
                     help)
-                        help_menu
+                        help-menu
                         ;;
                     rofi)
-                        import_lib "rofi-utils"
+                        import-lib "rofi-utils"
                         get-rofi-theme
                         ;;
                     gtk)
-                        import_lib "gtk-utils"
+                        import-lib "gtk-utils"
                         get-gtk-theme
                         ;;
                     qt|kde)
                         log.nyi   #TODO
                         ;;
                     ""|*)
-                        invld_cmd "$1" && self get theme help
+                        invalid-cmd "$1" && self get theme help
                         exit 1
                         ;;
                 esac
@@ -258,24 +258,24 @@ case "$1" in
                             [cmd]="get volume"
                             [usage]="myctl get volume"
                         )
-                        help_menu
+                        help-menu
                         ;;
                     mute)
-                        import_lib "audio-utils"
+                        import-lib "audio-utils"
                         get-mute
                         ;;
                     "")
-                        import_lib "audio-utils"
+                        import-lib "audio-utils"
                         get-volume
                         ;;
                     *)
-                        invld_cmd "$1" && self get volume help
+                        invalid-cmd "$1" && self get volume help
                         exit 1
                         ;;
                 esac
                 ;;
             ""|*)
-                invld_cmd "$1" && self get help
+                invalid-cmd "$1" && self get help
                 exit 1
                 ;;
         esac
@@ -295,14 +295,14 @@ case "$1" in
                     [sync]="Sync all packages with db"
                     [update]="Update package(s)"
                 )
-                help_menu
+                help-menu
                 ;;
             "")
-                invld_cmd && self pkg help
+                invalid-cmd && self pkg help
                 exit 1
                 ;;
             add)
-               import_lib "pkg-utils"
+               import-lib "pkg-utils"
                shift
                ;;
             rm)
@@ -321,7 +321,7 @@ case "$1" in
                shift
                ;;
             *)
-                invld_cmd "$1" && self help
+                invalid-cmd "$1" && self help
                 exit 1
                 ;;
         esac
@@ -335,14 +335,14 @@ case "$1" in
                 cmd_map=(
                     [cmd]="reload"
                 )
-                help_menu
+                help-menu
                 ;;
             "")
                 hyprctl reload > /dev/null
                 log.success "myde configuration reloaded."
                 ;;
             *)
-                invld_cmd "$1" && self help
+                invalid-cmd "$1" && self help
                 exit 1
                 ;;
         esac
@@ -360,7 +360,7 @@ case "$1" in
                     [theme]="set theme for entire myde or specific components."
                     [volume]="set speaker/sink volume or mute"
                 )
-                help_menu
+                help-menu
                 ;;
             mic)
                 shift
@@ -370,18 +370,18 @@ case "$1" in
                             [cmd]="set mic"
                             [usage]="myctl set mic [+|-]<level>"
                         )
-                        help_menu
+                        help-menu
                         ;;
                     mute)
-                      import_lib "audio-utils"
+                      import-lib "audio-utils"
                       set-mute
                       ;;
                     unmute)
-                      import_lib "audio-utils"
+                      import-lib "audio-utils"
                       set-mute -m -u
                       ;;
                     toggle)
-                      import_lib "audio-utils"
+                      import-lib "audio-utils"
                       set-mute -m -t
                       ;;
                     "")
@@ -389,13 +389,13 @@ case "$1" in
                         exit 1
                         ;;
                     *)
-                        import_lib "audio-utils"
+                        import-lib "audio-utils"
                         set-volume -m "$1"
                         ;;
                 esac
                 ;;
             terminal)
-                import_lib "get-desktop-file"
+                import-lib "get-desktop-file"
                 [ -n "$TERMINAL" ] || log.fatal "Terminal not set"
                 term_desktop="$(get-desktop-file -n "$TERMINAL")"
                 handlr set x-scheme-handler/terminal "$term_desktop" &> /dev/null
@@ -410,20 +410,20 @@ case "$1" in
                             [gtk]="set gtk color theme."
                             [rofi]="set rofi color theme."
                         )
-                        help_menu
+                        help-menu
                         ;;
                     rofi)
                         shift
-                        import_lib "rofi-utils"
+                        import-lib "rofi-utils"
                         set-rofi-theme "$1"
                         ;;
                     gtk)
                         shift
-                        import_lib "gtk-utils"
+                        import-lib "gtk-utils"
                         set-gtk-theme "$1"
                         ;;
                     ""|*)
-                        invld_cmd "$1" && self set theme help
+                        invalid-cmd "$1" && self set theme help
                         exit 1
                         ;;
                 esac
@@ -436,18 +436,18 @@ case "$1" in
                             [cmd]="set volume"
                             [usage]="myctl set volume [+|-]<level>"
                         )
-                        help_menu
+                        help-menu
                         ;;
                     mute)
-                      import_lib "audio-utils"
+                      import-lib "audio-utils"
                       set-mute
                       ;;
                     unmute)
-                      import_lib "audio-utils"
+                      import-lib "audio-utils"
                       set-mute -u
                       ;;
                     toggle)
-                      import_lib "audio-utils"
+                      import-lib "audio-utils"
                       set-mute -t
                       ;;
                     "")
@@ -455,13 +455,13 @@ case "$1" in
                       exit 1
                       ;;
                     *)
-                      import_lib "audio-utils"
+                      import-lib "audio-utils"
                       set-volume "$1"
                       ;;
                 esac
                 ;;
             ""|*)
-                invld_cmd "$1" && self set help
+                invalid-cmd "$1" && self set help
                 exit 1
                 ;;
         esac
@@ -476,15 +476,15 @@ case "$1" in
                 cmd_map=(
                     [wob]="Setup wob osd background Server"
                 )
-                help_menu
+                help-menu
                 ;;
             wob-daemon)
                 cmd_map[cmd]="setup wob"
-                import_lib "wob-osd"
+                import-lib "wob-osd"
                 start-wob-daemon
                 ;;
             ""|*)
-                invld_cmd "$1" && self setup help
+                invalid-cmd "$1" && self setup help
                 exit 1
                 ;;
         esac
@@ -502,14 +502,14 @@ case "$1" in
                     [wifi-menu]="Show wifi menu window."
                     [wobar]="Show wob osd bar"
                 )
-                help_menu
+                help-menu
                 ;;
             keybinds)
-                import_lib "keybinds-menu"
+                import-lib "keybinds-menu"
                 show-keybinds-menu
                 ;;
             'power-menu')
-                import_lib "power-menu"
+                import-lib "power-menu"
                 show-power-menu
                 ;;
             tui)
@@ -521,7 +521,7 @@ case "$1" in
                     [-e, --exec]="Command to run"
                     [-t, --term]="Terminal emulator to use (default: $TERMINAL)"
                 )
-                import_lib "tui-app"
+                import-lib "tui-app"
                 open-tui "$@"
                 ;;
             'wifi-menu')
@@ -535,21 +535,21 @@ case "$1" in
                 )
                 case "$1" in
                     help)
-                        help_menu
+                        help-menu
                         exit 0
                         ;;
                     "")
-                        invld_cmd && self show wobar help
+                        invalid-cmd && self show wobar help
                         exit 1
                         ;;
                     *)
-                        import_lib "wob-osd"
+                        import-lib "wob-osd"
                         show-wobar "$1"
                         ;;
                 esac
                 ;;
             ""|*)
-                invld_cmd "$1" && self show help
+                invalid-cmd "$1" && self show help
                 exit 1
                 ;;
         esac
@@ -557,7 +557,7 @@ case "$1" in
 
     # ==================== default ====================
     ""|*)
-        invld_cmd "$1" && self help
+        invalid-cmd "$1" && self help
         exit 1
         ;;
 esac

@@ -70,6 +70,8 @@ list-rofi-themes() {
 # ARGUMENTS:
 #   theme_name      Name of the theme to apply (without .rasi extension)
 #
+# TODO: Port help function to use help-menu method
+#
 # FLAGS:
 #   -h, --help      Show this help message
 #
