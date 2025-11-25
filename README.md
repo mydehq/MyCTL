@@ -60,7 +60,7 @@ For Usage & Configuration, visit [Documentation](https://mydehq.github.io/mywiki
 
 - **Main Repository**: [mydehq/MyDE](https://github.com/mydehq/MyDE)
 - **Wiki Repository**: [mydehq/MyWiki](https://github.com/mydehq/MyWiki)
-- **KireiSakura-Kit**: [Dependency Library](https://soymadip.github.io/KireiSakura-Kit)
+- **Dependency Library**: [KireiSakura](https://soymadip.github.io/KireiSakura-Kit)
 
 ---
 
