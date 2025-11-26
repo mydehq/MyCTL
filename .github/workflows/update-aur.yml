@@ -31,7 +31,33 @@ jobs:
           # Strip the 'v' prefix from the tag
           echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
 
+      - name: Check AUR Version
+        id: check_aur_version
+        run: |
+          # Get current AUR package version
+          AUR_VERSION=$(curl -s "https://aur.archlinux.org/rpc/v5/info/myctl" | \
+            jq -r '.results[0].Version // empty' | \
+            sed 's/-[0-9]*$//')
+
+          echo "Upstream version: ${{ env.VERSION }}"
+          echo "AUR version: $AUR_VERSION"
+
+          # Compare versions
+          if [ -n "$AUR_VERSION" ] && [ "$AUR_VERSION" != "null" ]; then
+            if echo -e "${AUR_VERSION}\n${{ env.VERSION }}" | sort -V -C 2>/dev/null; then
+              echo "AUR version is already up-to-date or newer than repo version"
+              echo "SKIP_UPDATE=true" >> $GITHUB_ENV
+            else
+              echo "AUR version is older than repo version, proceeding with update"
+              echo "SKIP_UPDATE=false" >> $GITHUB_ENV
+            fi
+          else
+            echo "Could not fetch AUR version or package doesn't exist, proceeding with update"
+            echo "SKIP_UPDATE=false" >> $GITHUB_ENV
+          fi
+
       - name: Update PKGBUILD and Checksums
+        if: env.SKIP_UPDATE == 'false'
         run: |
           docker run --rm -v "$PWD:/src" -w /src archlinux:base-devel sh -c '
             # 1. Install utils
@@ -59,6 +85,7 @@ jobs:
           '
 
       - name: Publish to AUR
+        if: env.SKIP_UPDATE == 'false'
         uses: KSXGitHub/github-actions-deploy-aur@v2.2.5
         with:
           pkgname: myctl
