@@ -3,15 +3,23 @@
 
 [changelog]
 
+# header = "# Whats New?"
+
 body = """
 {% for group, commits in commits | group_by(attribute="group") %}
     ### {{ group | upper_first }}
 
-    {% for commit in commits -%}
+    {% for commit in commits %}
+        {%- if commit.scope -%}
+        {%- if commit.scope == "aur" or commit.scope == "pkgbuild" -%}
+        - **AUR:** {{ commit.message | upper_first }} ({{ commit.id | truncate(length=7, end="") }})
+        {%- else -%}
+        - **{{ commit.scope }}:** {{ commit.message | upper_first }} ({{ commit.id | truncate(length=7, end="") }})
+        {%- endif -%}
+        {%- else -%}
         - {{ commit.message | upper_first }} ({{ commit.id | truncate(length=7, end="") }})
-    {% endfor -%}
-
-
+        {%- endif %}
+    {% endfor %}
 {% endfor %}
 """
 
@@ -31,13 +39,15 @@ commit_parsers = [
 
     # Skip Commits
     { message = "^chore\\(release\\)", skip = true },
-    { message = "^debug", skip = true },
     { message = "^ci", skip = true },
+    { message = "^style\\(cliff\\)", skip = true },
     { message = "^test", skip = true },
+    { message = "(?i)readme", skip = true },
+    { message = "^(docs|doc)", skip = true },
 
     # 1. The Good Stuff (Features)
     # { message = "^(feat|features)", group = "<!-- 0 --> Features" },
-    { message = "^feat",            group = "<!-- 0 -->🚀 Features" },
+    { message = "^feat", group = "<!-- 0 --> Features" },
 
     # 2. The Fixes
     { message = "^fix", group = "<!-- 1 --> Bug Fixes" },
@@ -46,12 +56,11 @@ commit_parsers = [
     { message = "^perf", group = "<!-- 2 --> Performance" },
     { message = "^refactor", group = "<!-- 3 --> Refactor" },
 
-    # 4. Documentation & Styles
+    # 4. Styling
     { message = "^(doc|docs)", group = "<!-- 4 --> Documentation" },
-    { message = "^style", group = "<!-- 5 --> Styling" },
 
     # 5. Low Priority / Internal
-    { message = ".*", group = "<!-- 8 --> Miscellaneous Tasks" },
+    { message = "^(chore|debug)", group = "<!-- 8 --> Miscellaneous" },
 ]
 
 protect_breaking_commits = false

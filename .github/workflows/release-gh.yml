@@ -63,7 +63,7 @@ jobs:
         id: generate_changelog
         with:
           config: cliff.toml
-          args: --verbose --latest --strip header
+          args: --verbose --latest
         env:
           OUTPUT: CHANGELOG.md
           GITHUB_REPO: ${{ github.repository }}
