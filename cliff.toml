@@ -7,12 +7,12 @@
 
 body = """
 {% for group, commits in commits | group_by(attribute="group") %}
-    ### {{ group | upper_first }}
+    ### ⏩︎{{ group | upper_first }}
 
     {% for commit in commits %}
         {%- if commit.scope -%}
-        {%- if commit.scope == "aur" or commit.scope == "pkgbuild" -%}
-        - **AUR:** {{ commit.message | upper_first }} ({{ commit.id | truncate(length=7, end="") }})
+        {%- if group == "<!-- 0 --> AUR" -%}
+        - {{ commit.message | upper_first }} ({{ commit.id | truncate(length=7, end="") }})
         {%- else -%}
         - **{{ commit.scope }}:** {{ commit.message | upper_first }} ({{ commit.id | truncate(length=7, end="") }})
         {%- endif -%}
@@ -40,27 +40,29 @@ commit_parsers = [
     # Skip Commits
     { message = "^chore\\(release\\)", skip = true },
     { message = "^ci", skip = true },
-    { message = "^style\\(cliff\\)", skip = true },
+    { message = "^\\(cliff\\)", skip = true },
     { message = "^test", skip = true },
     { message = "(?i)readme", skip = true },
     { message = "^(docs|doc)", skip = true },
 
-    # 1. The Good Stuff (Features)
-    # { message = "^(feat|features)", group = "<!-- 0 --> Features" },
-    { message = "^feat", group = "<!-- 0 --> Features" },
+    # 1. AUR Related
+    { message = "^.*\\((aur|pkgbuild)\\)", group = "<!-- 0 --> AUR" },
 
-    # 2. The Fixes
-    { message = "^fix", group = "<!-- 1 --> Bug Fixes" },
+    # 2. The Good Stuff (Features)
+    { message = "^feat", group = "<!-- 1 --> Features" },
 
-    # 3. Improvements
-    { message = "^perf", group = "<!-- 2 --> Performance" },
-    { message = "^refactor", group = "<!-- 3 --> Refactor" },
+    # 3. The Fixes
+    { message = "^fix", group = "<!-- 2 --> Bug Fixes" },
 
-    # 4. Styling
-    { message = "^(doc|docs)", group = "<!-- 4 --> Documentation" },
+    # 4. Improvements
+    { message = "^perf", group = "<!-- 3 --> Performance" },
+    { message = "^refactor", group = "<!-- 4 --> Refactor" },
 
-    # 5. Low Priority / Internal
-    { message = "^(chore|debug)", group = "<!-- 8 --> Miscellaneous" },
+    # 5. Styling
+    { message = "^style", group = "<!-- 5 --> Styling" },
+
+    # 6. Low Priority / Internal
+    { message = "^chore", group = "<!-- 8 --> Miscellaneous" },
 ]
 
 protect_breaking_commits = false
