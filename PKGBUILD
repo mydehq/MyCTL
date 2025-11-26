@@ -16,6 +16,7 @@ depends=(
     'grep'
     'rofi'
     'wob'
+    'wireplumber'
 )
 
 source=("${url}/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.gz")
@@ -36,8 +37,7 @@ package() {
         install -Dm644 "$libfile" "${pkgdir}/usr/lib/myctl/$(basename "$libfile")"
     done
 
-    msg2 "Installing assets..."
-    install -dm755 "${pkgdir}/usr/share/myctl"
-    cp -a --no-preserve=ownership src/* "${pkgdir}/usr/share/myctl/"
     msg2 "Packaging assets..."
+    install -dm755 "${pkgdir}/usr/src/myctl"
+    cp -a --no-preserve=ownership src/* "${pkgdir}/usr/src/myctl/"
 }
