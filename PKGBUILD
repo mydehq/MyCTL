@@ -23,15 +23,15 @@ source=("${url}/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.gz")
 package() {
 
     #shellcheck disable=SC2164,SC2154
-    cd "${srcdir}"
+    cd "${srcdir}" || exit 1
 
-    msg2 "Installing binaries..."
+    msg2 "Packaging binaries..."
     for binary in bin/*; do
         #shellcheck disable=SC2154
         install -Dm755 "$binary" "${pkgdir}/usr/bin/$(basename "$binary")"
     done
 
-    msg2 "Installing libraries..."
+    msg2 "Packaging libraries..."
     for libfile in lib/*; do
         install -Dm644 "$libfile" "${pkgdir}/usr/lib/myctl/$(basename "$libfile")"
     done
@@ -39,4 +39,5 @@ package() {
     msg2 "Installing assets..."
     install -dm755 "${pkgdir}/usr/share/myctl"
     cp -a --no-preserve=ownership src/* "${pkgdir}/usr/share/myctl/"
+    msg2 "Packaging assets..."
 }
