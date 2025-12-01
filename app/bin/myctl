@@ -20,16 +20,8 @@
 
 MYDE_DIR="$HOME/MyDE"
 MYDE_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/myde/myde.conf"
-
-# Detect if this is a system-wide installation
-if [[ "$(realpath "${BASH_SOURCE[0]}")" == "/usr/bin/myctl" ]]; then
-    LIB_DIR="/usr/lib/myctl"
-    SRC_DIR="/usr/src/myctl"
-else
-    LIB_DIR="$HOME/.local/lib/myctl"
-    SRC_DIR="$HOME/.local/src/myctl"
-fi
-
+LIB_DIR="$HOME/.local/lib/myctl"
+SRC_DIR="$HOME/.local/src/myctl"
 LOG_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/myde"
 MAX_VOLUME=153
 MAX_MIC=$MAX_VOLUME
@@ -37,6 +29,12 @@ MAX_MIC=$MAX_VOLUME
 #========================== Main Logic =========================
 
 THIS_PATH="$(realpath "${BASH_SOURCE[0]}")"
+
+# Detect if this is a system-wide installation
+if [[  "$THIS_PATH" == "/usr/bin/myctl" ]]; then
+    LIB_DIR="/usr/lib/myctl"
+    SRC_DIR="/usr/src/myctl"
+fi
 
 export MYDE_DIR LIB_DIR LOG_LEVEL THIS_PATH
 
