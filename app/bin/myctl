@@ -19,7 +19,7 @@
 # ======================== Config ===========================
 
 MYDE_DIR="$HOME/MyDE"
-MYDE_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/myde/myde.conf"
+MYDE_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/mydehq/myde.conf"
 LIB_DIR="$HOME/.local/lib/myctl"
 SRC_DIR="$HOME/.local/src/myctl"
 LOG_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/myde"
