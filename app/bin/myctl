@@ -31,12 +31,14 @@ MAX_MIC=$MAX_VOLUME
 THIS_PATH="$(realpath "${BASH_SOURCE[0]}")"
 
 # Detect if this is a system-wide installation
-if [[  "$THIS_PATH" == "/usr/bin/myctl" ]]; then
+if [[ "$THIS_PATH" == "/usr/bin/myctl" ]]; then
     LIB_DIR="/usr/lib/myctl"
     SRC_DIR="/usr/src/myctl"
 fi
 
-export MYDE_DIR LIB_DIR LOG_LEVEL THIS_PATH
+declare -x  LOG_LEVEL MAX_VOLUME MAX_MIC
+declare -rx MYDE_DIR MYDE_CONF \
+            THIS_PATH LIB_DIR SRC_DIR LOG_DIR
 
 # Dictionaries
 declare -A cmd_map IMPORTED_LIBS

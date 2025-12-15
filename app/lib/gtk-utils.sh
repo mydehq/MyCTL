@@ -7,6 +7,8 @@ GNOME_SCHEMA="org.gnome.desktop.interface"
 
 #------------- Internal Functions ---------------#
 
+declare -rx GTK_CONFIG_FILE GNOME_SCHEMA
+
 _get_gtk_config_value() {
     local key="$1"
 

@@ -59,6 +59,10 @@ _log_timestamp() {
 
 # Auto-detect context from caller
 _log_detect_context() {
+# =============== Pre Processing ==================
+
+readonly LOG_FILE
+export LOG_LEVEL LOG_TAB LOG_COLOR LOG_TIMESTAMP
     local i=1   # skip current func
     local caller_file="unknown"
     local caller_func="main"

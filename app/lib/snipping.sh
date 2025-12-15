@@ -11,6 +11,8 @@ SNIP_EDITOR_CMD="satty --filename - --output-filename"
 
 #================ Functions ==============#
 
+declare -rx SNIP_DEFAULT_MODE SNIP_CAPTURE_CMD SNIP_FILE SNIP_EDITOR_CMD
+
 snip() {
     local mode="${1:-area}" \
           default_mode="$SNIP_DEFAULT_MODE" \

@@ -28,6 +28,9 @@ TUI_PIN_FLOAT_NEEDED_MSG="${TUI_PIN_FLOAT_NEEDED_MSG:-Window does not qualify to
 
 #-------------- Functions ------------------#
 
+declare -rx TUI_PIN_CMD TUI_FLOAT_CMD
+export TUI_PIN_FLOAT_NEEDED_MSG
+
 open-tui() {
     local exec_cmd cmd_bin \
           terminal_cmd="${TERMINAL:-wezterm start}" terminal_bin term_class \
