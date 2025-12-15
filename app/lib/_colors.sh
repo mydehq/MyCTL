@@ -9,13 +9,15 @@
 #
 # Available Colors:
 # _RED,    _GREEN,  _BLUE,
-# _CYAN,   _WHITE,  _YELLOW,
-# _ORANGE, _PURPLE, _GRAY
+# _CYAN,   _WHITE,  _BLACK,
+# _YELLOW, _ORANGE, _PURPLE,
+# _GRAY
 #
 # Bold Colors:
 # _BOLD_RED,    _BOLD_GREEN,  _BOLD_BLUE,
-# _BOLD_CYAN,   _BOLD_WHITE,  _BOLD_YELLOW,
-# _BOLD_ORANGE, _BOLD_PURPLE, _BOLD_GRAY
+# _BOLD_CYAN,   _BOLD_WHITE,  _BOLD_BLACK,
+# _BOLD_YELLOW, _BOLD_ORANGE, _BOLD_PURPLE,
+# _BOLD_GRAY
 #
 # Reset Color:
 # _NC
