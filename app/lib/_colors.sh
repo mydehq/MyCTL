@@ -8,16 +8,16 @@
 # Detect Terminal support level & expor colors
 #
 # Available Colors:
-# _RED,    _GREEN,  _BLUE,
-# _CYAN,   _WHITE,  _BLACK,
-# _YELLOW, _ORANGE, _PURPLE,
-# _GRAY
+#   _RED,    _GREEN,  _BLUE,
+#   _CYAN,   _WHITE,  _BLACK,
+#   _YELLOW, _ORANGE, _PURPLE,
+#   _GRAY
 #
 # Bold Colors:
-# _BOLD_RED,    _BOLD_GREEN,  _BOLD_BLUE,
-# _BOLD_CYAN,   _BOLD_WHITE,  _BOLD_BLACK,
-# _BOLD_YELLOW, _BOLD_ORANGE, _BOLD_PURPLE,
-# _BOLD_GRAY
+#   _BOLD_RED,    _BOLD_GREEN,  _BOLD_BLUE,
+#   _BOLD_CYAN,   _BOLD_WHITE,  _BOLD_BLACK,
+#   _BOLD_YELLOW, _BOLD_ORANGE, _BOLD_PURPLE,
+#   _BOLD_GRAY
 #
 # Reset Color:
 # _NC
@@ -109,12 +109,6 @@ export-color-codes() {
         export "$col_key"="$col_value"
     done
 }
-
-echo-all-colors() {
-    echo -e "${_RED}Red${_NC} | ${_ORANGE}Orange${_NC} | ${_BLUE}Blue${_NC} | ${_GREEN}Green${_NC} | ${_YELLOW}Yellow${_NC} | ${_CYAN}Cyan${_NC} | ${_PURPLE}Purple${_NC} | ${_GRAY}Gray${_NC} | "
-    echo -e "${_BOLD_RED}Red${_NC} | ${_BOLD_ORANGE}Orange${_NC} | ${_BOLD_BLUE}Blue${_NC} | ${_BOLD_GREEN}Green${_NC} | ${_BOLD_YELLOW}Yellow${_NC} | ${_BOLD_CYAN}Cyan${_NC} | ${_BOLD_PURPLE}Purple${_NC} | ${_BOLD_GRAY}Gray${_NC} | "
-}
-
 
 
 
