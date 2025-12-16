@@ -22,7 +22,11 @@ MYDE_DIR="$HOME/MyDE"
 MYDE_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/mydehq/myde.conf"
 LIB_DIR="$HOME/.local/lib/myctl"
 SRC_DIR="$HOME/.local/src/myctl"
+
+LOG_MIN_LEVEL="info"
 LOG_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/myde"
+LOG_FILE="${LOG_DIR}/myctl.log"
+
 MAX_VOLUME=153
 MAX_MIC=$MAX_VOLUME
 
@@ -36,13 +40,14 @@ if [[ "$THIS_PATH" == "/usr/bin/myctl" ]]; then
     SRC_DIR="/usr/src/myctl"
 fi
 
-declare -x  LOG_LEVEL MAX_VOLUME MAX_MIC
+declare -x  LOG_MIN_LEVEL MAX_VOLUME MAX_MIC LOG_FILE
 declare -rx MYDE_DIR MYDE_CONF \
             THIS_PATH LIB_DIR SRC_DIR LOG_DIR
 
 # Dictionaries
 declare -A cmd_map IMPORTED_LIBS
 
+# Make Log directory
 ! [ -d "$LOG_DIR" ] && mkdir -p "$LOG_DIR"
 
   # shellcheck source=/dev/null
