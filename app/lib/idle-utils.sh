@@ -46,7 +46,7 @@ get-inhibitor-stat() {
     if pgrep -x "$idle_manager" >/dev/null 2>&1; then
         # Idle manager is running - idle is allowed (inhibition is OFF)
         if $return_json; then
-            ! $quiet && echo '{ "status": "false", "text": "󰾪", "class": "deactivated" }'
+            ! $quiet && echo '{ "status": "false", "text": "󰾪", "class": "deactivated", "tooltip": "Idle Inhibitor is OFF\nSystem will sleep Normally" }'
             return 0 
         else
             ! $quiet && echo false
@@ -55,7 +55,7 @@ get-inhibitor-stat() {
     else
         # Idle manager is stopped - idle is inhibited (inhibition is ON)
         if $return_json; then
-            ! $quiet && echo '{ "status": "true", "text": "󰅶", "class": "activated" }'
+            ! $quiet && echo '{ "status": "true", "text": "󰅶", "class": "activated", "tooltip": "Idle Inhibitor is ON\nSystem won'\''t sleep" }'
         else
             ! $quiet && echo true
         fi
