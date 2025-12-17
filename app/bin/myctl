@@ -47,8 +47,9 @@ declare -rx MYDE_DIR MYDE_CONF \
 # Dictionaries
 declare -A cmd_map IMPORTED_LIBS
 
-# Make Log directory
+# Make Log directory, Log file
 ! [ -d "$LOG_DIR" ] && mkdir -p "$LOG_DIR"
+! [ -f "$LOG_FILE" ] && touch "$LOG_FILE"
 
   # shellcheck source=/dev/null
 { source "$LIB_DIR"/_colors.sh && IMPORTED_LIBS[$(realpath "$LIB_DIR"/_colors.sh)]=1; } || {

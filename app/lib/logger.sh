@@ -277,13 +277,34 @@ _log() {
     echo -e "$(_tab)${color}${icon} ${message}${_NC}" >&2
 
     # Print to Log File
-    if [ -f "$LOG_FILE" ]; then
-        timestamp="$(date +"%y-%m-%d %H:%M:%S")"
-        echo -e "[$timestamp] $(_tab)${icon} ${message}" >> "$LOG_FILE" || _elog "Couldn't write to log file"
-    else
-        if [ "$msg_level_num" -lt 40 ]; then
-            _elog "Couldn't find log file at '$LOG_FILE'. Log was not saved."
+    if [ -n "$LOG_FILE" ]; then
+
+        # Create directory if it doesn't exist
+        if [ ! -d "$LOG_DIR" ]; then
+            if ! mkdir -p "$LOG_DIR"; then
+                _elog "Couldn't create log directory at '$LOG_DIR'. Log not saved."
+                return $return_code
+            fi
         fi
+
+        # Create file if it doesn't exist
+        if [ ! -f "$LOG_FILE" ]; then
+            if ! touch "$LOG_FILE"; then
+                _elog "Couldn't create log file at '$LOG_FILE'. Log not saved."
+                return $return_code
+            fi
+        fi
+
+        # Write to log file
+        if [ -w "$LOG_FILE" ]; then
+            timestamp="$(date +"%y-%m-%d %H:%M:%S")"
+            echo -e "[$timestamp] $(_tab)${icon} ${message}" >> "$LOG_FILE"
+        else
+            _elog "Log file at '$LOG_FILE' is not writable. Log not saved."
+        fi
+
+    elif [ "$msg_level_num" -ge 40 ]; then
+        _elog "LOG_FILE variable is not set. Log was not saved."
     fi
 
     # TODO: Send Notification
