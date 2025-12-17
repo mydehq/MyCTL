@@ -3,7 +3,7 @@
 
 [changelog]
 
-# header = "# Whats New?"
+header = "## Whats New?"
 
 body = """
 {% for group, commits in commits | group_by(attribute="group") %}
