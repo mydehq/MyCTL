@@ -63,6 +63,7 @@ case "$1" in
         cmd_map=(
             [cmd]="myctl"
             [get]="Retrieve info about current system config."
+            [idle-inhibitor]="Check idle inhibitor status"
             [pkg]="Package Management utils"
             [reload]="Reload MyDE configuration"
             [set]="Set configuration options (not yet implemented)"
@@ -281,6 +282,49 @@ case "$1" in
         esac
         ;;
 
+    #================ Idle-Inhibitor ==================
+
+    idle-inhibitor)
+        shift
+        import-lib "idle-utils"
+        cmd_map[cmd]="idle-inhibitor"
+        case "$1" in
+            help)
+                cmd_map=(
+                    [cmd]="idle-inhibitor"
+                    [status]="Check idle inhibitor status"
+                    [toggle]="Toggle idle inhibitor on/off"
+                )
+                help-menu
+                ;;
+            status)
+                shift
+                case "$1" in
+                    -j | --json)
+                        get-inhibitor-stat -j
+                        ;;
+                    "")
+                        if get-inhibitor-stat -q; then
+                            echo "Idle inhibition: ON (Screen won't sleep)"
+                        else
+                            echo "Idle inhibition: OFF (Normal sleep active)"
+                        fi
+                        ;;
+                    *)
+                        invalid-cmd "$1" && self idle-inhibitor help
+                        exit 1
+                        ;;
+                esac
+                ;;
+            toggle)
+                toggle-idle-inhibitor
+                ;;
+            "" | *)
+                invalid-cmd "$1" && self idle-inhibitor help
+                exit 1
+                ;;
+        esac
+        ;;
     #======================= pkg ====================
     pkg)
         cmd_map[cmd]="pkg"
