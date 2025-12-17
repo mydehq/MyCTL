@@ -47,7 +47,7 @@ get-inhibitor-stat() {
         # Idle manager is running - idle is allowed (inhibition is OFF)
         if $return_json; then
             ! $quiet && echo '{ "status": "false", "text": "󰾪", "class": "deactivated", "tooltip": "Idle Inhibitor is OFF\nSystem will sleep Normally" }'
-            return 0 
+            return 0
         else
             ! $quiet && echo false
             return 1
@@ -101,13 +101,13 @@ toggle-idle-inhibitor() {
         # Idle manager is not running, so start it (allow system to go idle)
         $idle_manager &
         notify-send \
-            -i battery-profile-powersave \
+            -i sleep \
             -u normal \
             -t 3000 \
             -h string:x-canonical-private-synchronous:idle-inhibition \
             -h boolean:transient:true \
             "Idle Inhibition" "Turned OFF"
-        sleep 1
+        sleep 0.1
         log.success "\nIdle Inhibition turned OFF"
     fi
 
