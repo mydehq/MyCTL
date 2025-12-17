@@ -88,67 +88,39 @@ _log_caller() {
 export LOG_TAB=0
 
 _tab() {
-    local cmd="$1" \
-          arg="$2"
-    local -i step_val \
-             set_val
+    local cmd="$1" arg="$2"
+    local step="${arg:-1}"
 
-    if [[ "$cmd" == "inc" || "$cmd" == "dec" ]]; then
-        local step="${arg:-1}"
+    # Default LOG_TAB if not set globally
+    : "${LOG_TAB:=0}"
 
-        if [[ "$step" =~ ^[0-9]+$ ]] && [ "$step" -gt 0 ]; then
-            step_val=$step
-        else
-            log.error "step '$cmd' must be a positive integer, got: '$step'"
-            return 1
-        fi
-    fi
-
-    if [[ "$cmd" == "set" ]]; then
-        if [[ "$arg" =~ ^[0-9]+$ ]]; then
-            set_val=$arg
-        else
-            log.error "level for 'set' must be a non-negative integer, got: '$arg'"
-            return 1
-        fi
-    fi
-
-    # --- Command Execution ---
     case "$cmd" in
         inc)
-            LOG_TAB=$((LOG_TAB + step_val))
-            return 0
+            [[ "$step" =~ ^[0-9]+$ ]] || { log.error "step must be positive int"; return 1; }
+            (( LOG_TAB += step ))
             ;;
         dec)
-            LOG_TAB=$((LOG_TAB - step_val))
-            [ "$LOG_TAB" -lt 0 ] && LOG_TAB=0
-            return 0
+            [[ "$step" =~ ^[0-9]+$ ]] || { log.error "step must be positive int"; return 1; }
+            (( LOG_TAB -= step ))
+            (( LOG_TAB < 0 )) && LOG_TAB=0
             ;;
         set)
-            LOG_TAB=$set_val
-            return 0
-            ;;
-        get)
-            echo "$LOG_TAB"
-            return 0
+            [[ "$arg" =~ ^[0-9]+$ ]] || { log.error "level must be non-negative int"; return 1; }
+            LOG_TAB=$arg
             ;;
         reset)
             LOG_TAB=0
-            return 0
+            ;;
+        get)
+            echo "$LOG_TAB"
             ;;
         "")
-            if [ "$LOG_TAB" -gt 0 ]; then
-
-                local indent=""
-                for ((i=0; i<LOG_TAB; i++)); do indent+="    "; done
-
-                printf "%s" "$indent"
-            fi
-            return 0
+            (( LOG_TAB > 0 )) && printf "%*s" $((LOG_TAB * 4)) ""
             ;;
         *)
-            log.error "Invalid command: $cmd. Use: inc, dec, set, reset, or nothing."
+            log.error "Invalid command: $cmd"
             return 1
+            ;;
     esac
 }
 
