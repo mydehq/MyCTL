@@ -104,7 +104,7 @@ export-color-codes() {
         col_value="${selected_ref_map[$key]}"
 
         # Convert the key to uppercase and add the underscore prefix
-        col_key="_$(echo "$key" | tr '[:lower:]' '[:upper:]')"
+        col_key="_${key^^}"
 
         export "$col_key"="$col_value"
     done
