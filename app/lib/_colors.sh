@@ -106,7 +106,7 @@ export-color-codes() {
         # Convert the key to uppercase and add the underscore prefix
         col_key="_${key^^}"
 
-        export "$col_key"="$col_value"
+        declare -grx "$col_key"="$col_value"
     done
 }
 
