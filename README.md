@@ -1,22 +1,14 @@
 <div align="center">
+  <img src="./app/icons/icon.png" height="75" alt="MyCTL Logo">
   <h1>MyCTL</h1>
   <p><b>A powerful CLI to control your Linux Desktop</b></p>
-</div>
 
-MyCTL is a cli tool that provides a unified way to control common Linux desktop operations. It offers audio control, theme management, distro-agnostic package management, screenshot utilities, interactive menus, and more. While it integrates seamlessly with the MyDE desktop environment, MyCTL works independently on any Linux system.
+MyCTL is a CLI tool that provides a unified way to control common Linux desktop operations. It offers audio, theme, package management, screenshot utilities & more. While it integrates seamlessly with the [MyDE](https://mydehq.github.io), MyCTL works independently on any Linux system.
+</div>
 
 ---
 
 ## Installation
-
-Install Required dependencies:
-
-- `bash` - Shell interpreter
-- `gawk` - Text processing
-- `sed` - Stream editor
-- `grep` - Pattern matching
-- `rofi` - Application launcher and menu system
-- `wob` - Wayland overlay bar for visual feedback
 
 ### Arch Linux
 
@@ -32,6 +24,15 @@ paru -S myctl
 ```
 
 #### 2. Manually
+
+Install Required dependencies:
+
+- `bash` - Shell interpreter
+- `gawk` - Text processing
+- `sed` - Stream editor
+- `grep` - Pattern matching
+- `rofi` - Application launcher and menu system
+- `wob` - Wayland overlay bar for visual feedback
 
 ```bash
 # Clone repo & cd into it
@@ -58,8 +59,8 @@ For Usage & Configuration, visit [Documentation](https://mydehq.github.io/mywiki
 
 ## Related Resources
 
-- **Main Repository**: [mydehq/MyDE](https://github.com/mydehq/MyDE)
-- **Wiki Repository**: [mydehq/MyWiki](https://github.com/mydehq/MyWiki)
+- **Main Repository**: [mydehq/MyDE](https://github.com/mydehq/myde)
+- **Wiki Repository**: [mydehq/MyWiki](https://github.com/mydehq/mydehq.github.io)
 - **Dependency Library**: [soymadip/KireiSakura Kit](https://soymadip.github.io/KireiSakura-Kit)
 
 ---
