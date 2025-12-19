@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-issue-config.json
+blank_issues_enabled: true
+contact_links:
+  - name: MyDE related Issues
+    about: "Report issues/feature requests related to MyDE"
+    url: https://github.com/mydehq/myde/issues/new/choose
+
+  - name: MyTM related Issues
+    about: "Report issues/feature requests related to MyTM"
+    url: https://github.com/mydehq/mytm/issues/new/choose
