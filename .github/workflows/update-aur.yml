@@ -44,12 +44,15 @@ jobs:
 
           # Compare versions
           if [ -n "$AUR_VERSION" ] && [ "$AUR_VERSION" != "null" ]; then
-            if echo -e "${AUR_VERSION}\n${{ env.VERSION }}" | sort -V -C 2>/dev/null; then
-              echo "AUR version is already up-to-date or newer than repo version"
+            if [ "$AUR_VERSION" == "${{ env.VERSION }}" ]; then
+              echo "AUR version is already at ${{ env.VERSION }}. Skipping update."
               echo "SKIP_UPDATE=true" >> $GITHUB_ENV
-            else
-              echo "AUR version is older than repo version, proceeding with update"
+            elif echo -e "${AUR_VERSION}\n${{ env.VERSION }}" | sort -V -C 2>/dev/null; then
+              echo "AUR version ($AUR_VERSION) is older than repo version (${{ env.VERSION }}). Proceeding with update."
               echo "SKIP_UPDATE=false" >> $GITHUB_ENV
+            else
+              echo "AUR version ($AUR_VERSION) is newer than repo version (${{ env.VERSION }}). Skipping update."
+              echo "SKIP_UPDATE=true" >> $GITHUB_ENV
             fi
           else
             echo "Could not fetch AUR version or package doesn't exist, proceeding with update"

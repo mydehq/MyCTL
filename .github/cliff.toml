@@ -43,6 +43,7 @@ commit_preprocessors = [
 commit_parsers = [
 
     # Skip Commits
+    { message = "^.*\\((cliff|ci)\\)", skip = true },
     { message = "^chore\\(release\\)", skip = true },
     { message = "^ci", skip = true },
     { message = "^\\w+\\(ci\\)", skip = true },

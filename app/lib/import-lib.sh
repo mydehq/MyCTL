@@ -71,7 +71,7 @@ EOF
                     # For non-standard paths, show relative path if possible
                     if [[ "$lib_path" == "$PWD"/* ]]; then
                         # Show relative to current directory
-                        display_name="${lib_path#$PWD/}"
+                        display_name="${lib_path#"$PWD"/}"
                     else
                         # Show the full path for absolute paths outside current dir
                         display_name="$lib_path"
