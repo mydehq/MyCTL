@@ -379,7 +379,14 @@ send-notification() {
         cmd_args+=("-h" "int:value:$bar_percent")
     fi
 
-    log.debug "Sending notification: ${cmd_args[*]} Content: $content"
+    if [[ "$LOG_MIN_LEVEL" == "debug" ]]; then
+        log.debug "Sending notification:"
+        log.tab.inc
+        for ((i = 0; i < ${#cmd_args[@]}; i += 2)); do
+            log.debug "${cmd_args[i]}='${cmd_args[i+1]}'"
+        done
+        log.tab.dec
+    fi
 
     notify_id=$(notify-send -p "${cmd_args[@]}" "$heading" "$content")
 
