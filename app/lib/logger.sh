@@ -10,10 +10,9 @@
 #
 #
 # TODO:
-#     1. Notify User
-#     2. Show caller method in debug mode
-#     3. Add log flags for showing custom caller
-#           - '-C|--caller' flag
+#     1. Show caller method in debug mode
+#     2. Add log flags for showing custom caller
+#           - '-cf|--caller' flag
 #           - Will be shown in all levels
 #           - Add a global var LOG_SHOW_CALLER
 #           - Add convinience methods: log.caller.unset, log.caller.hide, log.caller.set
@@ -21,7 +20,7 @@
 
 # ==================== Configuration ====================
 
-# Default log level (debug, info, warn, error, fatal)
+# Default log level (debug, normal, info, success, warn, error, fatal)
 LOG_MIN_LEVEL="${LOG_MIN_LEVEL:-info}"
 
 # Enable/Disable colored output (true/false)
@@ -141,8 +140,8 @@ _log() {
     local msg_level="$1" && shift
     local return_code=0 \
           bold_flag=false notify_user=false increase_tab=false no_color=false \
-          min_level_num color icon message leading_newlines timestamp\
-          _color  _icon _level
+          min_level_num color icon message leading_newlines timestamp caller_func \
+          _color  _icon _level n_urgency n_icon
 
     #---------- Internal Error Logger -----------
     _elog() {
@@ -153,21 +152,23 @@ _log() {
     _lvl2num() {
         case "$1" in
             [0-9]|[0-9][0-9])
-                if [[ "$1" -ge 10 && "$1" -le 50 ]]; then
+                if [[ "$1" -ge 10 && "$1" -le 60 ]]; then
                     echo "$1"
                 else
-                    _elog "Invalid numeric level '$1'. Defaulting to 20."
-                    echo 20 # Default to INFO
+                    _elog "Invalid numeric level '$1'. Defaulting to 15(normal)."
+                    echo 15 # Default to normal
                 fi
                 ;;
-            fatal)            echo 50  ;;
-            error)            echo 40  ;;
-            warn|ask)         echo 30  ;;
-            info|success|"")  echo 20  ;;
+            fatal)            echo 60  ;;
+            error)            echo 50  ;;
+            warn|ask)         echo 40  ;;
+            success)          echo 30  ;;
+            info)             echo 20  ;;
+            normal|"")        echo 15  ;;
             debug)            echo 10  ;;
             *)
-                _elog "Error: Invalid level name '$1'. Defaulting to info."
-                echo 20
+                _elog "Error: Invalid level name '$1'. Defaulting to normal."
+                echo 15
                 ;;
         esac
     }
@@ -189,13 +190,17 @@ _log() {
                 case "$2" in
                     black|red|green|blue|cyan|white|yellow|orange|purple|gray)
                         color="$2"
-                        shift 2
                         ;;
                     *)
                         _elog "Error: Invalid color name '$2'"
-                        shift 2
                         ;;
                 esac
+                shift 2
+                ;;
+            -cf|--caller)
+                [ -z "$2" ] && _elog "Error: Missing caller function name"
+                caller_func="$2"
+                shift 2
                 ;;
             -i|--icon)
                 icon="$2"
@@ -220,14 +225,30 @@ _log() {
     #------- Set defaults based on arg's level -------
 
     case "$msg_level" in
-        debug)    _color="gray";   _icon="⚙️" ;;
-        info)     _color="blue";   _icon="→" ;;
-        success)  _color="green";  _icon="✔" ;;
-        warn)     _color="yellow"; _icon="⚠️" ;;
-        ask)      _color="yellow"; _icon="?" ;;
-        error)    _color="red";    _icon="✗"; return_code=1 ;;
-        fatal)    _color="red";    _icon="✗"; return_code=1; bold_flag=true;;
-        *)        _color="";       _icon=" " ;;
+        debug)   _color="gray"; _icon="-"
+                 n_urgency="low"; n_icon="dialog-icon-preview"
+            ;;
+        info)    _color="blue";  _icon="i"
+                 n_urgency="low"; n_icon="dialog-information"
+            ;;
+        success) _color="green"; _icon="+"
+                 n_urgency="low"; n_icon="dialog-yes"
+            ;;
+        warn)    _color="yellow"; _icon="!"
+                 n_urgency="normal"; n_icon="dialog-warning"
+            ;;
+        ask)     _color="yellow"; _icon="?"
+                 n_urgency="normal"; n_icon="dialog-question"
+            ;;
+        error)   _color="red"; _icon="x";  return_code=1;
+                 n_urgency="critical"; n_icon="dialog-error"
+            ;;
+        fatal)   _color="red";  _icon="X";  return_code=1;   bold_flag=true;
+                 n_urgency="critical";  n_icon="dialog-error"
+            ;;
+        *)       _color="";  _icon=">"
+                 n_urgency="low"; n_icon="dialog-info"
+            ;;
     esac
 
 
@@ -307,9 +328,13 @@ _log() {
         _elog "LOG_FILE variable is not set. Log was not saved."
     fi
 
-    # TODO: Send Notification
+    # Send Notification
     if $notify_user || [ "$LOG_NOTIFY" = "true" ]; then
-        :
+        send-notification \
+            -u "$n_urgency" \
+            -i "$n_icon"    \
+            ${caller_func:+ -h $caller_func } \
+            "$message"
     fi
 
     return ${return_code}
