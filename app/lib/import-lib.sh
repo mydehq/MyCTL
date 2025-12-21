@@ -45,6 +45,27 @@ EOF
         esac
     done
 
+    # Helper to get display name
+    _get_lib_display_name() {
+        local lib_path="$1"
+        local display_name resolved_lib_dir
+        
+        resolved_lib_dir=$(realpath "$LIB_DIR" 2>/dev/null || echo "$LIB_DIR")
+
+        if [[ "$lib_path" == "$resolved_lib_dir"/* ]]; then
+            display_name=$(basename "$lib_path" .sh)
+        elif [[ "$lib_path" == *"$LIB_DIR"* ]]; then
+            display_name=$(basename "$lib_path" .sh)
+        else
+            if [[ "$lib_path" == "$PWD"/* ]]; then
+                display_name="${lib_path#"$PWD"/}"
+            else
+                display_name="$lib_path"
+            fi
+        fi
+        echo "$display_name"
+    }
+
     # Handle different modes
     case "$mode" in
         list)
@@ -55,30 +76,7 @@ EOF
             fi
 
             for lib_path in "${!IMPORTED_LIBS[@]}"; do
-
-                local display_name resolved_lib_dir
-
-                resolved_lib_dir=$(realpath "$LIB_DIR" 2>/dev/null || echo "$LIB_DIR")
-
-                # Check if it's in the standard lib directory (using resolved paths)
-                if [[ "$lib_path" == "$resolved_lib_dir"/* ]]; then
-                    # Extract just the filename, remove .sh extension if present
-                    display_name=$(basename "$lib_path" .sh)
-                elif [[ "$lib_path" == *"$LIB_DIR"* ]]; then
-                    # Handle relative lib paths
-                    display_name=$(basename "$lib_path" .sh)
-                else
-                    # For non-standard paths, show relative path if possible
-                    if [[ "$lib_path" == "$PWD"/* ]]; then
-                        # Show relative to current directory
-                        display_name="${lib_path#"$PWD"/}"
-                    else
-                        # Show the full path for absolute paths outside current dir
-                        display_name="$lib_path"
-                    fi
-                fi
-
-                echo "$display_name"
+                echo "$(_get_lib_display_name "$lib_path")"
             done
             return 0
             ;;
@@ -109,7 +107,7 @@ EOF
             return 1
             ;;
 
-        import)
+       import)
             [ ${#lib_files[@]} -eq 0 ] && {
                 log.error "No library file(s) specified to import."
                 exit 1
@@ -141,24 +139,22 @@ EOF
                             break
                         fi
 
-                        log.debug "Attempting to source $p"
-                        if source "$p"; then
-                            log.debug "Successfully sourced $p"
-                            log.debug "Running awk to find functions..."
+                        local pretty_name="$(_get_lib_display_name "$p")"
 
+                        if source "$p"; then
                             # Export all functions defined in library file
                             while IFS= read -r func_name; do
                                 if [[ -n "$func_name" ]]; then
-                                    log.debug "Exporting function: $func_name"
                                     export -f "$func_name"
                                 fi
                             done < <(extract-method-names "$p")
 
                             IMPORTED_LIBS["$resolved_path"]=1
                             found=true
+                            log.debug "Successfully sourced $pretty_name"
 
                         else
-                            log.debug "Failed to source $p"
+                            log.debug "Failed to source $pretty_name"
                         fi
                         break
                     }

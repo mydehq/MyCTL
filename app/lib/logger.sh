@@ -10,12 +10,7 @@
 #
 #
 # TODO:
-#     1. Show caller method in debug mode
-#     2. Add log flags for showing custom caller
-#           - '-cf|--caller' flag
-#           - Will be shown in all levels
-#           - Add a global var LOG_SHOW_CALLER
-#           - Add convinience methods: log.caller.unset, log.caller.hide, log.caller.set
+#       1. Add convinience methods: log.caller.unset, log.caller.hide, log.caller.set
 
 
 # ==================== Configuration ====================
@@ -32,51 +27,58 @@ LOG_FILE="${LOG_FILE:-}"
 # Notification settings
 LOG_NOTIFY="${LOG_NOTIFY:-false}"
 
+# Show caller method in debug mode
+LOG_SHOW_CALLER="${LOG_SHOW_CALLER:-false}"
+
 
 # ================= Pre Processing ====================
 
 readonly LOG_FILE
-export LOG_MIN_LEVEL LOG_TAB LOG_COLOR LOG_TIMESTAMP
+export LOG_MIN_LEVEL LOG_TAB LOG_COLOR LOG_TIMESTAMP LOG_SHOW_CALLER
 
 #================ Detect Context ==================
 
 _log_caller() {
-    local i=1   # skip current func
-    local caller_file="unknown"
-    local caller_func="main"
-    local filename
+    local i=1
+    local caller_file caller_func
 
     # Find the first caller outside of logger.sh and _utils.sh
     while [[ -n "${BASH_SOURCE[$i]}" ]]; do
-        local current_file="${BASH_SOURCE[$i]}"
-        local current_func="${FUNCNAME[$i]}"
-
-        # If the current file is not logger.sh or _utils.sh, then it's our caller
-        if [[ "$current_file" != *"/logger.sh"* && "$current_file" != *"/_utils.sh"* ]]; then
-            caller_file="$current_file"
-            caller_func="$current_func"
-            break
-        fi
-        ((i++))
+        case "${BASH_SOURCE[$i]}" in
+            */logger.sh|*/_utils.sh)
+                ((i++))
+                ;;
+            *)
+                break
+                ;;
+        esac
     done
 
-    # Extract filename without path and extension
-    filename=$(basename "$caller_file" .sh)
+    # Fallback to defaults if we went off the stack
+    caller_file="${BASH_SOURCE[$i]:-unknown}"
+    caller_func="${FUNCNAME[$i]:-main}"
 
-    # Determine if it's a lib function or main command
-    if [[ -n "${LIB_DIR}" && "$caller_file" == "${LIB_DIR}/"* ]]; then
-        # Library function - use function name if available
+    local filename="${caller_file##*/}"  # Remove everything up to last /
+    filename="${filename%.sh}"           # Remove .sh suffix
+
+    # Check if LIB_DIR is set and if caller_file starts with it
+    if [[ -n "${LIB_DIR}" && "${caller_file}" == "${LIB_DIR}"* ]]; then
         if [[ "$caller_func" != "main" && "$caller_func" != "source" ]]; then
-            echo "lib:${caller_func}"
+            echo "${caller_func}"
         else
-            echo "lib:${filename}"
+            echo "${filename}"
         fi
-    elif [[ "$filename" == "myctl" ]]; then
-        # Main myctl command
-        echo "myctl"
     else
-        # Other scripts
-        echo "${filename}"
+        # If the script is the main myctl script (or variant), show 'main'
+        if [[ "$filename" == "myctl"* ]]; then
+            if [[ "$caller_func" != "main" ]]; then
+                 echo "${caller_func}"
+            else
+                 echo "main"
+            fi
+        else
+             echo "${filename}"
+        fi
     fi
 }
 
@@ -128,10 +130,11 @@ _tab() {
 
 # Usage: _log <level> [flags] <message>
 # FLAGS:
-#    -b,--bold            Enable bold text
-#    -c,--color <color>   Color name to use
-#    -t,--tab             Increase indentation level (for single message)
-#    -p,--plain           Disable color output (Overrides defaults)
+#    -b,--bold                 Enable bold text
+#    -c,--color <color>        Color name to use
+#    -t,--tab                  Increase indentation level (for single message)
+#    -p,--plain                Disable color output (Overrides defaults)
+#    -cf,--caller-func <name>  Set caller function name
 #
 # Levels: debug < info < success < warn < error < fatal
 # Colors: black, red, green, blue, cyan, white, yellow,
@@ -139,8 +142,8 @@ _tab() {
 _log() {
     local msg_level="$1" && shift
     local return_code=0 \
-          bold_flag=false notify_user=false increase_tab=false no_color=false \
-          min_level_num color icon message leading_newlines timestamp caller_func \
+          bold_flag=false notify_user=false increase_tab=false no_color=false explicit_caller=false \
+          min_level_num color icon message leading_newlines timestamp caller_func caller_name_raw \
           _color  _icon _level n_urgency n_icon
 
     #---------- Internal Error Logger -----------
@@ -193,13 +196,19 @@ _log() {
                         ;;
                     *)
                         _elog "Error: Invalid color name '$2'"
+                        return 1
                         ;;
                 esac
                 shift 2
                 ;;
             -cf|--caller)
-                [ -z "$2" ] && _elog "Error: Missing caller function name"
-                caller_func="$2"
+                [ -z "$2" ] && {
+                    _elog "Error: Missing caller function name"
+                    return 1
+                }
+                caller_name_raw="$2"
+                caller_func=" [$2]"
+                explicit_caller=true
                 shift 2
                 ;;
             -i|--icon)
@@ -225,7 +234,7 @@ _log() {
     #------- Set defaults based on arg's level -------
 
     case "$msg_level" in
-        debug)   _color="gray"; _icon="-"
+        debug)   _color="gray"; _icon="#"
                  n_urgency="low"; n_icon="dialog-icon-preview"
             ;;
         info)    _color="blue";  _icon="i"
@@ -292,10 +301,22 @@ _log() {
     done
     echo -en "$leading_newlines" >&2
 
+    #------------ Find Caller ----------
+
+    # Show caller if explicitly enabled OR if we are in debug (min_level <= 10) mode
+    if [[ "$min_level_num" -le 10 ]] || $LOG_SHOW_CALLER; then
+        if [[ -z "$caller_func" ]]; then
+             caller_func=" [$(_log_caller)]" || {
+                _elog "Failed to get caller function"
+                return 1
+            }
+        fi
+    fi
+
     #---------- Print Message -----------
 
     # Print to STDERR
-    echo -e "$(_tab)${color}${icon} ${message}${_NC}" >&2
+    echo -e "$(_tab)${color}${icon}${_NC}${_GRAY}${caller_func}${_NC} ${color}${message}${_NC}" >&2
 
     # Print to Log File
     if [ -n "$LOG_FILE" ]; then
@@ -333,7 +354,7 @@ _log() {
         send-notification \
             -u "$n_urgency" \
             -i "$n_icon"    \
-            ${caller_func:+ -h $caller_func } \
+            ${explicit_caller:+ -h "$caller_name_raw" } \
             "$message"
     fi
 
