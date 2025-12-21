@@ -8,10 +8,6 @@
 # MyCTL Logger
 # Centralized logging system with color support and formatting options
 #
-#
-# TODO:
-#       1. Add convinience methods: log.caller.unset, log.caller.hide, log.caller.set
-
 
 # ==================== Configuration ====================
 
