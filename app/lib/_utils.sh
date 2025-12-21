@@ -214,23 +214,28 @@ read-conf() {
 
 has-cmd() {
   local cmd_str cmd_bin
-
-  log.debug "Checking Command:  $cmd_str."
+  local exit_code=0
 
   [[ "$#" -eq 0 ]] && {
     log.error "No arguments provided."
     return 2
   }
 
-  cmd_str="$1" && cmd_bin="${cmd_str%% *}"   # first token before any space
+  # Iterate over every argument passed to the function
+  for cmd_str in "$@"; do
+    cmd_bin="${cmd_str%% *}"   # first token before any space
 
-  if command -v "$cmd_bin" &>/dev/null; then
+    log.debug "Checking Command: $cmd_bin"
+
+    if command -v "$cmd_bin" &>/dev/null; then
       log.debug "$cmd_bin is available."
-      return 0
-  else
+    else
       log.debug "$cmd_bin is not available."
-      return 1
-  fi
+      exit_code=1
+    fi
+  done
+
+  return "$exit_code"
 }
 
 #----------------
@@ -248,6 +253,165 @@ get-file-hash() {
       log.error "File not found: $file"
   fi
 }
+
+#----------------
+
+# Usage: send-notification [flags] <content>
+# Flags:
+#    -i,--icon      <ICON>                  icon name/path to use (default: myctl/myde)
+#    -b,--bar       <percentage>            Show progress bar with percentage (default: 0)
+#    -u,--urgency   <low|normal|critical>   urgency level (default: normal)
+#    -t,--timeout   <timeoutInMS>           timeout value in milliseconds
+#    -h,--heading   <string>                heading text (default: MyCTL/MyDE)
+#    -T,--transient                         tell daemon not to store in history (default: false)
+#    -id,--id-str   <idNum/String>          notification ID string.
+#                                           notification with same id will be replaced by new one.
+send-notification() {
+    local icon="myctl"
+    local id=""
+    local heading="MyCTL"
+    local urgency="normal"
+    local timeout=""
+    local content=""
+    local transient="false"
+    local show_bar="false"
+    local bar_percent="0"
+    local notify_id
+
+    # Internal logging helper
+    _elog() {
+        echo -e "$(_tab 2>/dev/null)${_BOLD_RED}✗ ERROR: $1${_NC}" >&2
+    }
+
+    # Dependency check
+    if ! command -v notify-send &> /dev/null; then
+        _elog "notify-send not found."
+        return 1
+    fi
+
+    # Environment check
+    if [[ "$INSIDE_MYDE" == "true" ]]; then
+        icon="myde"
+        heading="MyDE"
+    fi
+
+    # Argument Parsing
+    while [[ "$#" -gt 0 ]]; do
+        case "$1" in
+            -i|--icon)
+                [[ -z "$2" ]] && _elog "Icon required." && return 1
+                icon="$2"; shift 2 ;;
+            -b|--bar)
+                show_bar="true"
+                if [[ -n "$2" && "$2" =~ ^[0-9]+$ ]]; then
+                    bar_percent="$2"
+                    shift 2
+                else
+                    _elog "Invalid percentage: $2"
+                    return 1
+                fi
+                ;;
+            -u|--urgency)
+                if [[ -z "$2" ]]; then
+                    _elog "Urgency value needed (low|normal|critical)"
+                    return 1
+                fi
+
+                case "$2" in
+                    low|normal|critical)
+                        urgency="$2"
+                        shift 2
+                        ;;
+                    *)
+                        _elog "Invalid urgency: $2"
+                        return 1
+                        ;;
+                esac
+            ;;
+            -t|--timeout)
+                timeout="$2"; shift 2 ;;
+            -h|--heading)
+                heading="$2"; shift 2 ;;
+            -T|--transient)
+                transient="true"; shift 1 ;;
+            -id|--id-str)
+                id="$2"; shift 2 ;;
+            -*)
+                _elog "Unknown option: $1"
+                return 1 ;;
+            *)
+                content="$1"; shift 1 ;;
+        esac
+    done
+
+    if [[ -z "$content" ]]; then
+        _elog "Notification content is required"
+        return 1
+    fi
+
+    if [[ -z "$timeout" ]]; then
+        if [[ "$urgency" == "critical" ]]; then
+            timeout=10000
+        fi
+    fi
+
+    # Bar >100% overflow
+    if [[ "$show_bar" == "true" ]] && [[ "$bar_percent" -gt 100 ]]; then
+        urgency="critical"
+        bar_percent=$((bar_percent - 100))
+    fi
+
+    local cmd_args=()
+    cmd_args+=("-i" "$icon")
+    cmd_args+=("-u" "$urgency")
+    cmd_args+=("-h" "boolean:transient:$transient")
+
+    if [ -n "$timeout" ]; then
+        cmd_args+=("-t" "$timeout")
+    fi
+
+    # Conditional flags
+    if [[ -n "$id" ]]; then
+        cmd_args+=("-h" "string:x-canonical-private-synchronous:$id")
+    fi
+
+    if [[ "$show_bar" == "true" ]]; then
+        cmd_args+=("-h" "int:value:$bar_percent")
+    fi
+
+    if [[ "$LOG_MIN_LEVEL" == "debug" ]]; then
+        log.debug "Sending notification:"
+        log.tab.inc
+        for ((i = 0; i < ${#cmd_args[@]}; i += 2)); do
+            log.debug "${cmd_args[i]}='${cmd_args[i+1]}'"
+        done
+        log.tab.dec
+    fi
+
+    notify_id=$(notify-send -p "${cmd_args[@]}" "$heading" "$content")
+
+    if [[ -z "$notify_id" ]]; then
+        log.error "Failed to send notification"
+        return 1
+    fi
+
+    log.debug "Notification ID: $notify_id"
+
+    if [[ "$urgency" == "critical" && -z "$timeout" ]]; then
+        local sleep_time
+        sleep_time=$(awk "BEGIN {print $timeout/1000}")
+
+        (
+            sleep "$sleep_time"
+            gdbus call --session \
+                --dest org.freedesktop.Notifications \
+                --object-path /org/freedesktop/Notifications \
+                --method org.freedesktop.Notifications.CloseNotification \
+                "$notify_id" > /dev/null
+        ) & disown
+    fi
+}
+
 
 #--------------- If executed directly ----------------------
 

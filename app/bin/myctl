@@ -19,34 +19,47 @@
 # ======================== Config ===========================
 
 MYDE_DIR="$HOME/MyDE"
-MYDE_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/myde/myde.conf"
+MYDE_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/mydehq/myde.conf"
+LIB_DIR="$HOME/.local/lib/myctl"
+SRC_DIR="$HOME/.local/src/myctl"
 
-# Detect if this is a system-wide installation
-if [[ "$(realpath "${BASH_SOURCE[0]}")" == "/usr/bin/myctl" ]]; then
-    LIB_DIR="/usr/lib/myctl"
-    SRC_DIR="/usr/src/myctl"
-else
-    LIB_DIR="$HOME/.local/lib/myctl"
-    SRC_DIR="$HOME/.local/src/myctl"
-fi
-
+LOG_MIN_LEVEL="info"
 LOG_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/myde"
+LOG_FILE="${LOG_DIR}/myctl.log"
+
 MAX_VOLUME=153
 MAX_MIC=$MAX_VOLUME
 
 #========================== Main Logic =========================
 
 THIS_PATH="$(realpath "${BASH_SOURCE[0]}")"
+INSIDE_MYDE="$({ [ -d "$MYDE_DIR" ] && [ -d "$MYDE_DIR"/dots ]; } && echo true || echo false)"
 
-export MYDE_DIR LIB_DIR LOG_LEVEL THIS_PATH
+# Detect if this is a system-wide installation
+if [[ "$THIS_PATH" == "/usr/bin/myctl" ]]; then
+    LIB_DIR="/usr/lib/myctl"
+    SRC_DIR="/usr/src/myctl"
+fi
+
+declare -x  LOG_MIN_LEVEL MAX_VOLUME MAX_MIC LOG_FILE
+declare -rx MYDE_DIR MYDE_CONF INSIDE_MYDE \
+            THIS_PATH LIB_DIR SRC_DIR LOG_DIR
 
 # Dictionaries
 declare -A cmd_map IMPORTED_LIBS
 
+# Make Log directory, Log file
 ! [ -d "$LOG_DIR" ] && mkdir -p "$LOG_DIR"
+! [ -f "$LOG_FILE" ] && touch "$LOG_FILE"
 
-# shellcheck source=/dev/null
-source "$LIB_DIR"/_utils.sh && IMPORTED_LIBS[$(realpath "$LIB_DIR"/_utils.sh)]=1 || {
+  # shellcheck source=/dev/null
+{ source "$LIB_DIR"/_colors.sh && IMPORTED_LIBS[$(realpath "$LIB_DIR"/_colors.sh)]=1; } || {
+    echo "FATAL: Failed to source colros"
+    exit 1
+}
+
+  # shellcheck source=/dev/null
+{ source "$LIB_DIR"/_utils.sh && IMPORTED_LIBS[$(realpath "$LIB_DIR"/_utils.sh)]=1; } || {
     echo "FATAL: Failed to source Utils"
     exit 1
 }

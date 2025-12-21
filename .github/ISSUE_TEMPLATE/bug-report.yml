@@ -1,0 +1,65 @@
+name: Bug Report
+description: Something is broken?.
+
+title: "[Bug] "
+labels: "bug"
+projects: "mydehq/2"
+assignees: soymadip
+
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Provide a one sentence summary and detailed reproduction steps
+      value: |
+        <!-- Begin your issue with a one sentence summary -->
+        ## SUMMARY_SENTENCE_HERE
+
+        ### Description
+        <!--  Describe with sufficient detail to reproduce from a clean install.
+          - Explain the issue in detail.
+          - Issues with insufficient detail may be summarily closed.
+        -->
+
+        DESCRIPTION_HERE
+
+        ### Steps to reproduce:
+        1.
+        2.
+        3.
+        4.
+
+        ### **Expected Behavior**:
+
+
+        ### **Actual Behavior**:
+
+        <!-- Before Submitting, did you:
+          1. Include config files from dots/ directory if relevant?
+          2. Check system logs for relevant errors? (please include!)
+          3. Specify which MyDE component is affected (myctl, dotfiles, modules, etc.)?
+          4. Click Preview to ensure everything looks right?
+          5. Hide videos, large images and logs in ``` inside collapsible blocks:
+
+        <details><summary>click to expand</summary>
+
+        ```json
+
+        ```
+        </details>
+        -->
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission Checks
+      options:
+        - label: I have searched for existing bug reports
+          required: true
+        - label: I have checked closed/opened issues
+          required: true
+        - label: I have previewed markdown
+          required: true

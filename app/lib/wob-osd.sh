@@ -9,6 +9,8 @@
 
 # =================== Functions ====================#
 
+declare -rx WOB_MAX_LEVEL WOB_INFO_FILE
+
 # Check If wob daemon is running; if not, start it
 start-wob-daemon() {
     local wob_pipe="/tmp/${HYPRLAND_INSTANCE_SIGNATURE:-myde_$(date +%s)}.wob"

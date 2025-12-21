@@ -7,6 +7,9 @@ MAX_MIC=${MAX_MIC:-$MAX_VOLUME}
 
 #========================= Functions =========================#
 
+# set readonly
+readonly MAX_VOLUME MAX_MIC
+
 get-volume() {
     local mic=false volume
     local wpctl_device="@DEFAULT_AUDIO_SINK@"

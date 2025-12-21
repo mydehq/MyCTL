@@ -1,0 +1,38 @@
+name: MyCTL Command Request
+description: Request a new MyCTL command/subcommand
+
+title: "[MyCTL] Add <your_request>"
+labels: ["myctl", "need feature"]
+projects: "mydehq/2"
+
+body:
+  - type: textarea
+    id: body
+    attributes:
+      label: Command Details
+      value: |
+        - **Desc**: <!-- what it does. eg. Take ScreenShot of selection/winow/screen -->
+
+        - **Usage**: <!-- full command `eg. myctl get snip [area|screen|active]` -->
+
+        - **subcommands**:
+          <!--
+            List of subcommands in any:
+            1. `area`: selection/area (defalut)
+            2. `screen`: active screen
+            3. `active`: active window
+          -->
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission Checks
+      options:
+        - label: I have checked that the command is not already available
+          required: true
+        - label: I have checked closed/opened issues
+          required: true
+        - label: I have previewed markdown
+          required: true

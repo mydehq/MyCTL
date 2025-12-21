@@ -22,7 +22,7 @@ get-distro() {
 }
 
 # auto avail distro name
-DISTRO_NAME="$(get-distro)" && export DISTRO_NAME
+DISTRO_NAME="$(get-distro)" && declare -rx DISTRO_NAME
 
 # get-distro-base [<distro>]
 # Auto detects current distro if not provided
