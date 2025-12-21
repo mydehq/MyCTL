@@ -26,15 +26,6 @@ paru -S myctl
 
 #### 2. Manually
 
-Install Required dependencies:
-
-- `bash` - Shell interpreter
-- `gawk` - Text processing
-- `sed` - Stream editor
-- `grep` - Pattern matching
-- `rofi` - Application launcher and menu system
-- `wob` - Wayland overlay bar for visual feedback
-
 ```bash
 # Clone repo & cd into it
 git clone https://aur.archlinux.org/myctl && cd myctl
@@ -48,8 +39,18 @@ sudo pacman -U myctl-*.pkg.tar.zst
 
 ### From Source
 
+Install Required dependencies:
+
+- `bash` - Shell interpreter
+- `gawk` - Text processing
+- `sed` - Stream editor
+- `grep` - Pattern matching
+- `rofi` - Application launcher and menu system
+- `wob` - Wayland overlay bar for visual feedback
+- `wireplumber` - For volume control
+
 ```bash
-git clone https://github.com/mydehq/MyCTL && cd MyCTL
+git clone https://github.com/mydehq/myctl && cd myctl
 
 bash install.sh
 ```
