@@ -25,33 +25,47 @@ jobs:
           echo "Release Action (Type): ${{ github.event.action }}"
           echo "Is Prerelease: ${{ github.event.release.prerelease }}"
 
-      - name: Get Version from Tag
+      - name: Get Version
         id: get_version
         run: |
-          # Strip the 'v' prefix from the tag
-          echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+          if [ "${{ github.event_name }}" == "release" ]; then
+            # Strip the 'v' prefix from the tag
+            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+            echo "PKGREL=1" >> $GITHUB_ENV
+            echo "IS_MANUAL=false" >> $GITHUB_ENV
+          else
+             # For manual trigger, read from PKGBUILD
+             echo "Fetching version from PKGBUILD..."
+             PKGVER=$(grep "^pkgver=" PKGBUILD | cut -d'=' -f2)
+             PKGREL=$(grep "^pkgrel=" PKGBUILD | cut -d'=' -f2)
+             echo "VERSION=$PKGVER" >> $GITHUB_ENV
+             echo "PKGREL=$PKGREL" >> $GITHUB_ENV
+             echo "IS_MANUAL=true" >> $GITHUB_ENV
+          fi
 
       - name: Check AUR Version
         id: check_aur_version
         run: |
           # Get current AUR package version
-          AUR_VERSION=$(curl -s "https://aur.archlinux.org/rpc/v5/info/myctl" | \
-            jq -r '.results[0].Version // empty' | \
-            sed 's/-[0-9]*$//')
+          # We want the full version string (e.g. 1.3.0-1) for comparison
+          AUR_FULL_VERSION=$(curl -s "https://aur.archlinux.org/rpc/v5/info/myctl" | \
+            jq -r '.results[0].Version // empty')
+          
+          REPO_FULL_VERSION="${{ env.VERSION }}-${{ env.PKGREL }}"
 
-          echo "Upstream version: ${{ env.VERSION }}"
-          echo "AUR version: $AUR_VERSION"
+          echo "Repo version: $REPO_FULL_VERSION"
+          echo "AUR version: $AUR_FULL_VERSION"
 
           # Compare versions
-          if [ -n "$AUR_VERSION" ] && [ "$AUR_VERSION" != "null" ]; then
-            if [ "$AUR_VERSION" == "${{ env.VERSION }}" ]; then
-              echo "AUR version is already at ${{ env.VERSION }}. Skipping update."
+          if [ -n "$AUR_FULL_VERSION" ] && [ "$AUR_FULL_VERSION" != "null" ]; then
+            if [ "$AUR_FULL_VERSION" == "$REPO_FULL_VERSION" ]; then
+              echo "AUR version is already at $REPO_FULL_VERSION. Skipping update."
               echo "SKIP_UPDATE=true" >> $GITHUB_ENV
-            elif echo -e "${AUR_VERSION}\n${{ env.VERSION }}" | sort -V -C 2>/dev/null; then
-              echo "AUR version ($AUR_VERSION) is older than repo version (${{ env.VERSION }}). Proceeding with update."
+            elif echo -e "${AUR_FULL_VERSION}\n${REPO_FULL_VERSION}" | sort -V -C 2>/dev/null; then
+              echo "AUR version ($AUR_FULL_VERSION) is older than repo version ($REPO_FULL_VERSION). Proceeding with update."
               echo "SKIP_UPDATE=false" >> $GITHUB_ENV
             else
-              echo "AUR version ($AUR_VERSION) is newer than repo version (${{ env.VERSION }}). Skipping update."
+              echo "AUR version ($AUR_FULL_VERSION) is newer than repo version ($REPO_FULL_VERSION). Skipping update."
               echo "SKIP_UPDATE=true" >> $GITHUB_ENV
             fi
           else
@@ -66,24 +80,25 @@ jobs:
             # 1. Install utils
             pacman -Sy --noconfirm pacman-contrib git
 
-            # 2. Update pkgver in PKGBUILD
-            # We use double quotes inside sed so the variable expands,
-            # but single quotes around sh -c to keep it safe.
-            sed -i "s/^pkgver=.*$/pkgver=${{ env.VERSION }}/" PKGBUILD
+            # 2. Update pkgver/pkgrel in PKGBUILD only if released
+            if [ "${{ env.IS_MANUAL }}" == "false" ]; then
+               echo "Updating PKGBUILD version to ${{ env.VERSION }} and resetting pkgrel..."
+               sed -i "s/^pkgver=.*$/pkgver=${{ env.VERSION }}/" PKGBUILD
+               sed -i "s/^pkgrel=.*$/pkgrel=1/" PKGBUILD
+            else
+               echo "Manual trigger detected. Keeping PKGBUILD version as is."
+            fi
 
-            # 3. Reset pkgrel to 1
-            sed -i "s/^pkgrel=.*$/pkgrel=1/" PKGBUILD
-
-            # 4. Update Checksums
-            # This will download the tarball you just attached to the Release
-            # and calculate the SHA256 automatically.
+            # 3. Update Checksums
+            # This will download the tarball (if validating remote source)
+            # OR just update based on local file if we changed logic. 
+            # Standard updpkgsums downloads source.
             updpkgsums
 
-            # 5. Generate .SRCINFO
+            # 4. Generate .SRCINFO
             makepkg --printsrcinfo > .SRCINFO
 
-            # 6. Fix Permissions
-            # Docker creates files as root. We must give them back to the GitHub Runner (1001:121)
+            # 5. Fix Permissions
             chown -R 1001:121 .
           '
 
@@ -96,5 +111,5 @@ jobs:
           commit_username: ${{ secrets.AUR_USERNAME }}
           commit_email: ${{ secrets.AUR_EMAIL }}
           ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
-          commit_message: "Update to ${{ env.VERSION }}"
+          commit_message: "Update to ${{ env.VERSION }}-${{ env.PKGREL }}"
           ssh_keyscan_types: rsa,ecdsa,ed25519
