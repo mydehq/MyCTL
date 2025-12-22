@@ -1,5 +1,5 @@
 name: Make GitHub Release
-run-name: Making Release from '${{ github.sha }}'
+run-name: "Making Release: ${{ github.ref_name }}"
 
 on:
   push:

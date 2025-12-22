@@ -1,81 +1,91 @@
 ---
 commitizen:
-  name: cz_customize
   annotated_tag: true
   breaking_change_exclamation_in_title: true
-  major_version_zero: true
-  tag_format: v$version
-  version_scheme: semver
-  version: 1.5.0
-  update_changelog_on_bump: false
-
-  legacy_tag_formats:
-    - $version
-
-  version_files:
-    - "PKGBUILD:^pkgver=.*:pkgver=${version}"
-    - "PKGBUILD:^pkgrel=.*:pkgrel=1"
-
   customize:
-    # --- ADDED THIS LINE ---
-    message_template: "{{change_type}}{% if scope %}({{scope}}){% endif %}: {{message}}{% if body %}\n\n{{body}}{% endif %}{% if footer %}\n\n{{footer}}{% endif %}"
-
-    commit_parser: '(?i)^(?P<change_type>feat|fix|perf|refactor|docs)(?:\((?P<scope>(?!.*(readme|\bcz\b|\bcliff\b|\baur\b|pkgbuild)).*)\))?: (?P<message>(?!.*(readme|\bcz\b|\bcliff\b|\baur\b|pkgbuild)).*)$'
-
     change_type_map:
-      feat: "⏩︎ Features"
-      fix: "⏩︎ Bug Fixes"
-      perf: "⏩︎ Performance"
-      refactor: "⏩︎ Refactor"
-      docs: "⏩︎ Documentation"
-
+      docs: "\u23E9\uFE0E Documentation"
+      feat: "\u23E9\uFE0E Features"
+      fix: "\u23E9\uFE0E Bug Fixes"
+      perf: "\u23E9\uFE0E Performance"
+      refactor: "\u23E9\uFE0E Refactor"
     change_type_order:
-      - "⏩︎ Features"
-      - "⏩︎ Bug Fixes"
-      - "⏩︎ Performance"
-      - "⏩︎ Refactor"
-      - "⏩︎ Documentation"
+    - "\u23E9\uFE0E Features"
+    - "\u23E9\uFE0E Bug Fixes"
+    - "\u23E9\uFE0E Performance"
+    - "\u23E9\uFE0E Refactor"
+    - "\u23E9\uFE0E Documentation"
+    commit_parser: '(?i)^(?P<change_type>feat|fix|perf|refactor|docs)(?:\((?P<scope>(?!.*(readme|\bcz\b|\bcliff\b|\baur\b|pkgbuild)).*)\))?:
+      (?P<message>(?!.*(readme|\bcz\b|\bcliff\b|\baur\b|pkgbuild)).*)$'
+    message_template: '{{change_type}}{% if scope %}({{scope}}){% endif %}: {{message}}{%
+      if body %}
 
+
+      {{body}}{% endif %}{% if footer %}
+
+
+      {{footer}}{% endif %}'
     questions:
-      - type: list
-        name: change_type
-        message: "Select the type of change you are committing\n->"
-        choices:
-          - value: feat
-            name: "feat      A new feature. Correlates with MINOR in SemVer"
-          - value: fix
-            name: "fix       A bug fix. Correlates with PATCH in SemVer"
-          - value: docs
-            name: "docs      Documentation only changes"
-          - value: style
-            name: "style     Changes that do not affect meaning of the code"
-          - value: refactor
-            name: "refactor  A code change that neither fixes a bug nor adds a feature"
-          - value: perf
-            name: "perf      A code change that improves performance"
-          - value: test
-            name: "test      Adding missing or correcting existing tests"
-          - value: build
-            name: "build     Changes to the build system or external dependencies"
-          - value: ci
-            name: "ci        Changes to our CI configuration files and scripts"
-          - value: chore
-            name: "chore     Other changes that don't modify src or test files"
-          - value: revert
-            name: "revert    Reverts a previous commit"
+    - choices:
+      - name: feat      A new feature. Correlates with MINOR in SemVer
+        value: feat
+      - name: fix       A bug fix. Correlates with PATCH in SemVer
+        value: fix
+      - name: docs      Documentation only changes
+        value: docs
+      - name: style     Changes that do not affect meaning of the code
+        value: style
+      - name: refactor  A code change that neither fixes a bug nor adds a feature
+        value: refactor
+      - name: perf      A code change that improves performance
+        value: perf
+      - name: test      Adding missing or correcting existing tests
+        value: test
+      - name: build     Changes to the build system or external dependencies
+        value: build
+      - name: ci        Changes to our CI configuration files and scripts
+        value: ci
+      - name: chore     Other changes that don't modify src or test files
+        value: chore
+      - name: revert    Reverts a previous commit
+        value: revert
+      message: 'Select the type of change you are committing
 
-      - type: input
-        name: scope
-        message: "Scope: What is the scope of this change? (class or file name) (press [enter] to skip)\n->"
+        ->'
+      name: change_type
+      type: list
+    - message: 'Scope: What is the scope of this change? (class or file name) (press
+        [enter] to skip)
 
-      - type: input
-        name: message
-        message: "Message: Write a short and imperative summary of the code changes: (lower case and no period)\n->"
+        ->'
+      name: scope
+      type: input
+    - message: 'Message: Write a short and imperative summary of the code changes:
+        (lower case and no period)
 
-      - type: input
-        name: body
-        message: "Body: Provide additional contextual information about the code changes: (press [enter] to skip)\n->"
+        ->'
+      name: message
+      type: input
+    - message: 'Body: Provide additional contextual information about the code changes:
+        (press [enter] to skip)
 
-      - type: input
-        name: footer
-        message: "Footer: Info about Breaking Changes & reference issues that this commit closes. (press [enter] to skip)\n->"
+        ->'
+      name: body
+      type: input
+    - message: 'Footer: Info about Breaking Changes & reference issues that this commit
+        closes. (press [enter] to skip)
+
+        ->'
+      name: footer
+      type: input
+  legacy_tag_formats:
+  - $version
+  major_version_zero: true
+  name: cz_customize
+  tag_format: v$version
+  update_changelog_on_bump: false
+  version: 1.5.1
+  version_files:
+  - PKGBUILD:^pkgver=.*:pkgver=${version}
+  - PKGBUILD:^pkgrel=.*:pkgrel=1
+  version_scheme: semver
