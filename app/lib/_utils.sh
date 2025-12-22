@@ -548,6 +548,7 @@ gen-hash() {
     # Delete everything starting from the first space
     echo "${output%% *}"
 }
+
 #-------------------------------------
 
 # Usage: compare-hash --f1 <path>|--h1 <hex> --f2 <path>|--h2 <hex> [--algo|-a <algo>]
@@ -631,6 +632,8 @@ get-file-size() {
 
     echo $(( $(wc -c < "$file") ))
 }
+
+
 
 
 #--------------- If executed directly ----------------------
