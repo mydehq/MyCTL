@@ -85,7 +85,6 @@ commitizen:
   tag_format: v$version
   update_changelog_on_bump: false
   version: 1.5.1
-  version_files:
-  - PKGBUILD:^pkgver=.*:pkgver=${version}
-  - PKGBUILD:^pkgrel=.*:pkgrel=1
+  pre_bump_hooks:
+    - ".github/scripts/bump-pkgbuild.sh ${version}"
   version_scheme: semver
