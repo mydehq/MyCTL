@@ -2,7 +2,7 @@
 
 pkgname=myctl
 pkgdesc="A powerful CLI to control your Linux Desktop"
-pkgver=1.3.0
+pkgver=1.4.0
 pkgrel=3
 arch=('any')
 url="https://github.com/mydehq/${pkgname}"
