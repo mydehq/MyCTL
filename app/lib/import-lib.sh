@@ -1,4 +1,9 @@
 
+# Usage:
+#       import-lib [library1] [library2]        Import one or more libraries
+#       import-lib --check|-c <library>         Check if library is imported
+#       import-lib --list|-l                    List all imported libraries
+#       import-lib --help|-h                    Show this help
 import-lib() {
     local mode="import"
     local lib_files=()
@@ -49,7 +54,7 @@ EOF
     _get_lib_display_name() {
         local lib_path="$1"
         local display_name resolved_lib_dir
-        
+
         resolved_lib_dir=$(realpath "$LIB_DIR" 2>/dev/null || echo "$LIB_DIR")
 
         if [[ "$lib_path" == "$resolved_lib_dir"/* ]]; then

@@ -12,7 +12,6 @@
 #   -t, --theme     Theme file path (default: ~/.config/rofi/conf/power-menu.rasi)
 #   -h, --help      Show this help message
 #
-
 show-power-menu() {
     # Default values
     local theme_file="${SRC_DIR}/rofi/power-menu.rasi"

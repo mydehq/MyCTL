@@ -10,6 +10,7 @@
 
 
 # ~/.config/myde - /etc/myde
+# ~/.cache/myde  - /var/cache/myde
 # ~/.local/bin   - /usr/bin
 # ~/.local/lib   - /usr/lib
 # ~/.local/src   - /usr/src
@@ -22,6 +23,7 @@ MYDE_DIR="$HOME/MyDE"
 MYDE_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/mydehq/myde.conf"
 LIB_DIR="$HOME/.local/lib/myctl"
 SRC_DIR="$HOME/.local/src/myctl"
+PLUGIN_DIRS="/usr/share/myctl/plugins:$HOME/.local/share/myctl/plugins"
 
 LOG_MIN_LEVEL="info"
 LOG_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/myde"
@@ -51,12 +53,6 @@ declare -A cmd_map IMPORTED_LIBS
 # Make Log directory, Log file
 ! [ -d "$LOG_DIR" ] && mkdir -p "$LOG_DIR"
 ! [ -f "$LOG_FILE" ] && touch "$LOG_FILE"
-
-  # shellcheck source=/dev/null
-{ source "$LIB_DIR"/_colors.sh && IMPORTED_LIBS[$(realpath "$LIB_DIR"/_colors.sh)]=1; } || {
-    echo "FATAL: Failed to source colros"
-    exit 1
-}
 
   # shellcheck source=/dev/null
 { source "$LIB_DIR"/_utils.sh && IMPORTED_LIBS[$(realpath "$LIB_DIR"/_utils.sh)]=1; } || {
@@ -95,7 +91,7 @@ case "$1" in
                     [desktop-file]="Get desktop file path of an application"
                     [desktop-filename]="Get desktop file name of an application"
                     [distro]="Get distro name/info"
-                    [conf]="Get value of given key in MyDE conf file"
+                    [hconf]="Get value of given key in a hyprland conf file"
                     [mic]="Get microphone/source volume"
                     [snip]="Get screenshot of selection/window/desktop"
                     [theme]="Get current theme of MyDE or specific components"
@@ -151,10 +147,10 @@ case "$1" in
                         ;;
                 esac
                 ;;
-            conf)
+            hconf)
                 shift
                 cmd_map[cmd]="get conf"
-                read-conf "$1"
+                read-hconf "$1"
                 ;;
             cursor)
                 shift
