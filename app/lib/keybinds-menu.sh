@@ -14,7 +14,6 @@
 #   -a, --awk       AWK script path
 #   -h, --help      Show this help message
 #
-
 show-keybinds-menu() {
     # Default values
     local keybinds_file="$MYDE_DIR/wiki/docs/user-guide/keybinds.md"

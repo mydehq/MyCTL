@@ -31,6 +31,15 @@ TUI_PIN_FLOAT_NEEDED_MSG="${TUI_PIN_FLOAT_NEEDED_MSG:-Window does not qualify to
 declare -rx TUI_PIN_CMD TUI_FLOAT_CMD
 export TUI_PIN_FLOAT_NEEDED_MSG
 
+# Usage: open-tui [options] <command>
+# Flags:
+#   -e, --exec     Execute the command in the terminal
+#   -c, --class    Set the terminal class
+#   -t, --term     terminal bin name
+#   -p, --pin      Pin the tui window
+#   -f, --float    Float the tui window (when needed for pinning)
+#   -h, --help     Show this help message
+#
 open-tui() {
     local exec_cmd cmd_bin \
           terminal_cmd="${TERMINAL:-wezterm start}" terminal_bin term_class \

@@ -9,6 +9,7 @@ GNOME_SCHEMA="org.gnome.desktop.interface"
 
 declare -rx GTK_CONFIG_FILE GNOME_SCHEMA
 
+# Usage: _get_gtk_config_value <key>
 _get_gtk_config_value() {
     local key="$1"
 
@@ -20,6 +21,7 @@ _get_gtk_config_value() {
     grep "^$key=" "$GTK_CONFIG_FILE" | sed 's/.*\s*=\s*//'
 }
 
+# Usage: _set_gtk_config_value <key> <value>
 _set_gtk_config_value() {
     local key="$1"
     local value="$2"

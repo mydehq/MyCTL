@@ -5,14 +5,14 @@ shopt -s expand_aliases
 
 #--------------------
 
-# extract_method_names <lib_file_path>
+# Usage: extract-method-names <lib_file_path>
 extract-method-names() {
     local file_path="$1"
     local awk_script="${SRC_DIR}/extract-method-names.awk"
 
     # Validate input
     [[ -z "$file_path" ]] && {
-        echo "ERROR: No file path provided to extract_method_names" >&2
+        echo "ERROR: No file path provided to extract-method-names" >&2
         return 1
     }
 
@@ -32,7 +32,7 @@ extract-method-names() {
 
 #-------------------
 
-# export-lib-methods <lib_file_path>
+# Usage: export-lib-methods <lib_file_path>
 export-lib-methods() {
     local file_path="$1"
 
@@ -75,6 +75,7 @@ self() {
 
 #---------------
 
+# Usage: run-script <script-path>
 run-script() {
     local script_path="$1"
 
@@ -168,7 +169,7 @@ _print_help_cmds() {
 
 #-----------------
 
-# Usage: read-conf <key_name> <hypr_file>
+# Usage: read-hconf <key_name> <hypr_file>
 # Limitation: Doesn't expand hyprlang vars. only shell vars/cmds.
 # TODO:
 #       default file support

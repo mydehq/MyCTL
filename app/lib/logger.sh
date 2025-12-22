@@ -84,6 +84,13 @@ _log_caller() {
 # Initialize LOG_TAB
 export LOG_TAB=0
 
+# Usage: _tab <command> [<step>]
+# Commands:
+#   inc - Increase LOG_TAB by <step>
+#   dec - Decrease LOG_TAB by <step>
+#   set - Set LOG_TAB to <step>
+#   get - Get LOG_TAB value
+#   reset - Reset LOG_TAB to 0
 _tab() {
     local cmd="$1" arg="$2"
     local step="${arg:-1}"

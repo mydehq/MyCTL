@@ -1,2 +1,2 @@
 
-# This will expand read-conf in future.
+# This will expandread-hconf in future.
