@@ -53,12 +53,6 @@ declare -A cmd_map IMPORTED_LIBS
 ! [ -f "$LOG_FILE" ] && touch "$LOG_FILE"
 
   # shellcheck source=/dev/null
-{ source "$LIB_DIR"/_colors.sh && IMPORTED_LIBS[$(realpath "$LIB_DIR"/_colors.sh)]=1; } || {
-    echo "FATAL: Failed to source colros"
-    exit 1
-}
-
-  # shellcheck source=/dev/null
 { source "$LIB_DIR"/_utils.sh && IMPORTED_LIBS[$(realpath "$LIB_DIR"/_utils.sh)]=1; } || {
     echo "FATAL: Failed to source Utils"
     exit 1
