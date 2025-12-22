@@ -17,6 +17,13 @@
 # ~/.local/share - /usr/share
 
 
+#=================== Check for sudo ==================
+
+if [[ -n "$SUDO_USER" ]]; then
+    echo -e "\n\033[0;31mDo not run $0 with sudo.\033[0m"
+    exit 1
+fi
+
 # ======================== Config ===========================
 
 MYDE_DIR="$HOME/MyDE"
