@@ -413,6 +413,225 @@ send-notification() {
     fi
 }
 
+#--------------------------------
+
+# Compare two files and return 0 if identical, else 1
+# Auto-detects text/binary files
+# Usage: cmp-files <file1> <file2>
+cmp-files() {
+    local file1="$1"
+    local file2="$2"
+
+    # Get file extension
+    local ext="${file1##*.}"
+
+    # Text file extensions
+    case "$ext" in
+        html|htm|css|js|jsx|ts|tsx|json|xml|txt|md|mdx|yml|yaml|toml|py|c|cc|cpp|hpp|h|sh|bash|zsh|rs|go|zig|gitignore)
+            # Use diff for text files
+            diff -q "$file1" "$file2" &>/dev/null
+            return $?
+            ;;
+        *)
+            # Use cmp for binary files or unknown extensions
+            cmp -s "$file1" "$file2"
+            return $?
+            ;;
+    esac
+}
+
+#---------------------------------
+
+# Check if JSON file is valid
+# Usage: validate-json <json_path>
+validate-json() {
+    local json_path="${1:-null}"
+
+    if [ "$json_path" == "null" ]; then
+        log.error "Json path is required"
+        return 1
+    fi
+
+    # Basic existence and size checks
+    if ! [ -f "$json_path" ]; then
+        log.error "index.json not found at '$json_path'"
+        return 1
+    fi
+
+    if ! [ -s "$json_path" ]; then
+        log.error "index.json is empty"
+        return 1
+    fi
+
+    # Validate JSON parse
+    if ! jq -e . "$json_path" >/dev/null 2>&1; then
+        log.error "index.json contains invalid JSON"
+        return 1
+    fi
+}
+
+#-------------------------------------
+
+# Usage: gen-hash <file> [-a|--algo <md5|sha1|sha256|sha512>]
+# Default: sha256
+gen-hash() {
+    local file
+    local algo="sha256"
+
+    while [[ "$#" -gt 0 ]]; do
+        case "$1" in
+            -a|--algo)
+                if [[ -z "$2" ]]; then
+                    log.error "Algorithm not specified"
+                    return 1
+                fi
+                algo="$2"
+                shift 2
+                ;;
+            -*)
+                log.error "Invalid option: $1"
+                return 1
+                ;;
+            *)
+                if [[ -n "$file" ]]; then
+                    log.error "Too many arguments (only one file allowed)"
+                    return 1
+                fi
+                file="$1"
+                shift
+                ;;
+        esac
+    done
+
+    # Validation
+    if [[ -z "$file" ]]; then
+        log.error "File not specified"
+        return 1
+    elif [[ ! -f "$file" ]]; then
+        log.error "File not found: $file"
+        return 1
+    fi
+
+    # Normalize Algo
+    algo="${algo,,}"
+
+    # Define Command
+    local cmd=""
+    case "$algo" in
+        md5)
+            if has-cmd md5sum; then cmd="md5sum"
+            elif has-cmd md5;  then cmd="md5 -q"
+            fi
+            ;;
+        sha1|sha256|sha512)
+            local gnu_cmd="${algo}sum"
+            if has-cmd "$gnu_cmd"; then
+                cmd="$gnu_cmd"
+            elif has-cmd shasum; then
+                cmd="shasum -a ${algo#sha}"
+            fi
+            ;;
+        *)
+            log.error "Unsupported hash algorithm: $algo"
+            return 1
+            ;;
+    esac
+
+    if [[ -z "$cmd" ]]; then
+        log.error "No suitable tool found for $algo"
+        return 1
+    fi
+
+    local output
+    output=$($cmd "$file") || return $?
+
+    # Delete everything starting from the first space
+    echo "${output%% *}"
+}
+#-------------------------------------
+
+# Usage: compare-hash --f1 <path>|--h1 <hex> --f2 <path>|--h2 <hex> [--algo|-a <algo>]
+# Exactly one of --f1/--h1 and one of --f2/--h2 must be provided.
+# Returns 0 if hashes match, 1 otherwise.
+compare-hash () {
+    local file1=""
+    local file2=""
+    local algo="sha256"
+    local hash_input=""
+    local hash_input2=""
+
+    # require exactly one of --f1/--h1 and one of --f2/--h2
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --f1) file1="$2"; shift 2;;
+            --f2) file2="$2"; shift 2;;
+            --h1) hash_input="$2"; shift 2;;
+            --h2) hash_input2="$2"; shift 2;;
+            --algo|-a) algo="$2"; shift 2;;
+            --help)
+                echo "Usage:"
+                echo "  compare-hash --f1 <path>|--h1 <hex> --f2 <path>|--h2 <hex> [--algo|-a <algo>]"
+                return 0;;
+            *)
+                log.error "Unknown argument: $1"
+                return 1;;
+        esac
+    done
+
+    # Exclusivity checks per side
+    if { [ -n "$file1" ] && [ -n "$hash_input" ]; } || { [ -z "$file1" ] && [ -z "$hash_input" ]; }; then
+        log.error "Exactly one of --f1 or --h1 must be provided"
+        return 1
+    fi
+    if { [ -n "$file2" ] && [ -n "$hash_input2" ]; } || { [ -z "$file2" ] && [ -z "$hash_input2" ]; }; then
+        log.error "Exactly one of --f2 or --h2 must be provided"
+        return 1
+    fi
+
+    # Normalize algo
+    algo="${algo,,}"
+
+    local h1 h2
+
+    # Compute or accept side 1 hash
+    if [ -n "$hash_input" ]; then
+        h1="$hash_input"
+    else
+        if [ -z "$file1" ] || [ ! -f "$file1" ]; then
+            log.error "File not found: $file1"
+            return 1
+        fi
+        h1="$(gen-hash "$file1" "$algo")" || return 1
+    fi
+
+    # Compute or accept side 2 hash
+    if [ -n "$hash_input2" ]; then
+        h2="$hash_input2"
+    else
+        if [ -z "$file2" ] || [ ! -f "$file2" ]; then
+            log.error "File not found: $file2"
+            return 1
+        fi
+        h2="$(gen-hash "$file2" "$algo")" || return 1
+    fi
+
+    [ "$h1" = "$h2" ]
+}
+
+#---------------------------------
+
+# Get file size in Bytes
+# Usage: get-file-size <file>
+get-file-size() {
+    local file="$1"
+    if [ ! -f "$file" ]; then
+        log.error "File not found: $file"
+        return 1
+    fi
+
+    echo $(( $(wc -c < "$file") ))
+}
+
 
 #--------------- If executed directly ----------------------
 
