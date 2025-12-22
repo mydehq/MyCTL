@@ -3,7 +3,8 @@
   <h1>MyCTL</h1>
   <p><b>A powerful CLI to control your Linux Desktop</b></p>
 
-MyCTL is a cli tool that provides a unified way to control common Linux desktop operations. While it integrates seamlessly with the MyDE desktop environment, MyCTL works independently on any Linux system.
+MyCTL is a cli tool that provides a unified way to control common Linux desktop operations.   
+While it integrates with the MyDE desktop environment, MyCTL works independently on any Linux system.
 
 </div>
 
