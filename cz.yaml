@@ -82,9 +82,9 @@ commitizen:
   - $version
   major_version_zero: true
   name: cz_customize
+  pre_bump_hooks:
+  - .github/scripts/bump-pkgbuild.sh {version}
   tag_format: v$version
   update_changelog_on_bump: false
-  version: 1.5.1
-  pre_bump_hooks:
-    - ".github/scripts/bump-pkgbuild.sh ${version}"
+  version: 1.6.0
   version_scheme: semver
