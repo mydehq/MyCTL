@@ -42,18 +42,32 @@ jobs:
           echo "REPO_NAME=$repo_name" >> "$GITHUB_ENV"
 
           if [ "${{ github.event_name }}" == "workflow_run" ]; then
-            echo "Trigger: Release Completed. Extracting tag..."
-            raw_tag="${{ github.event.workflow_run.head_branch }}"
-            echo "VERSION=${raw_tag#v}" >> "$GITHUB_ENV"
+            echo "Trigger: Release Completed. Extracting tag from head_branch..."
+            # For workflow_run, head_branch usually contains the tag/branch name that triggered the parent
+            RAW_TAG="${{ github.event.workflow_run.head_branch }}"
+            # Strip 'v' prefix if present
+            CLEAN_VERSION="${RAW_TAG#v}"
+            echo "VERSION=$CLEAN_VERSION" >> "$GITHUB_ENV"
             echo "PKGREL=1" >> "$GITHUB_ENV"
             echo "IS_MANUAL=false" >> "$GITHUB_ENV"
           else
-            echo "Trigger: Manual/Push. Reading from PKGBUILD..."
-            PKGVER=$(grep -m 1 "^pkgver=" PKGBUILD | cut -d'=' -f2)
-            PKGREL=$(grep -m 1 "^pkgrel=" PKGBUILD | cut -d'=' -f2)
+            echo "Trigger: Manual/Push. Reading directly from PKGBUILD file..."
+
+            # Using sed to ensure we get a clean value without quotes
+            PKGVER=$(sed -n 's/^pkgver=//p' PKGBUILD | tr -d '"' | tr -d "'")
+            PKGREL=$(sed -n 's/^pkgrel=//p' PKGBUILD | tr -d '"' | tr -d "'")
+
             echo "VERSION=$PKGVER" >> "$GITHUB_ENV"
             echo "PKGREL=$PKGREL" >> "$GITHUB_ENV"
             echo "IS_MANUAL=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Validate Version Format
+        run: |
+          if [[ ! "${{ env.VERSION }}" =~ ^[0-9]+(\.[0-9]+)*$ ]]; then
+            echo "ERROR: Invalid version format detected: '${{ env.VERSION }}'"
+            echo "Version must be numeric (e.g., 1.2.3). Stopping workflow."
+            exit 1
           fi
 
       - name: Check Current AUR Version
@@ -64,21 +78,22 @@ jobs:
 
           REPO_FULL_VERSION="${{ env.VERSION }}-${{ env.PKGREL }}"
 
-          echo "Repo version: $REPO_FULL_VERSION"
-          echo "AUR version:  $AUR_FULL_VERSION"
+          echo "Repo version target: $REPO_FULL_VERSION"
+          echo "AUR version current: $AUR_FULL_VERSION"
 
           if [ -z "$AUR_FULL_VERSION" ] || [ "$AUR_FULL_VERSION" == "null" ]; then
-            echo "Package not in AUR yet or RPC failed. Proceeding."
+            echo "Package not in AUR yet. Proceeding."
             echo "SKIP_UPDATE=false" >> "$GITHUB_ENV"
           elif [ "$AUR_FULL_VERSION" == "$REPO_FULL_VERSION" ]; then
-            echo "AUR is up to date. Skipping."
+            echo "AUR is already up to date. Skipping."
             echo "SKIP_UPDATE=true" >> "$GITHUB_ENV"
           else
+            # Verify if local is actually newer to prevent accidental downgrades
             if echo -e "${AUR_FULL_VERSION}\n${REPO_FULL_VERSION}" | sort -V -C 2>/dev/null; then
-              echo "AUR version is older. Proceeding."
+              echo "AUR version is older. Proceeding with update."
               echo "SKIP_UPDATE=false" >> "$GITHUB_ENV"
             else
-              echo "AUR version is newer (Local downgrade?). Skipping."
+              echo "Warning: AUR version is newer than Local. Skipping to prevent downgrade."
               echo "SKIP_UPDATE=true" >> "$GITHUB_ENV"
             fi
           fi
@@ -94,6 +109,7 @@ jobs:
             archlinux:base-devel sh -c '
               pacman -Sy --noconfirm pacman-contrib git
 
+              # Only force-bump PKGBUILD if it comes from a Release trigger
               if [ "$IS_MANUAL" == "false" ]; then
                 echo "Release Detected: Updating PKGBUILD to v$VERSION"
                 sed -i "s/^pkgver=.*$/pkgver=$VERSION/" PKGBUILD
