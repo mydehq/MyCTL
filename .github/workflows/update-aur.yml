@@ -1,11 +1,16 @@
 name: Update AUR Package
-run-name: Update AUR to ${{ github.event.release.tag_name || 'manual version' }}
+run-name: Update AUR (${{ github.event_name == 'workflow_run' && 'New Release' || 'Manual Fix' }})
 
 on:
-  release:
+  workflow_run:
+    workflows: ["Make GitHub Release"]
     types:
-      - published
-      - prereleased
+      - completed
+
+  push:
+    branches: [main]
+    paths:
+      - "PKGBUILD"
 
   workflow_dispatch:
 
@@ -19,6 +24,8 @@ permissions:
 jobs:
   aur-release:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -32,16 +39,17 @@ jobs:
           repo_name=$(echo "${GITHUB_REPOSITORY#*/}" | tr '[:upper:]' '[:lower:]')
           echo "REPO_NAME=$repo_name" >> "$GITHUB_ENV"
 
-          # Extract version logic
-          if [ "${{ github.event_name }}" == "release" ]; then
-            raw_tag="${{ github.event.release.tag_name }}"
+          if [ "${{ github.event_name }}" == "workflow_run" ]; then
+            echo "Trigger: Release Completed. extracting tag..."
+            # For workflow_run, 'head_branch' contains the tag name (e.g. v1.2.0)
+            raw_tag="${{ github.event.workflow_run.head_branch }}"
 
             echo "VERSION=${raw_tag#v}" >> "$GITHUB_ENV"
             echo "PKGREL=1" >> "$GITHUB_ENV"
             echo "IS_MANUAL=false" >> "$GITHUB_ENV"
           else
-            echo "Manual trigger: Fetching version from local PKGBUILD..."
 
+            echo "Trigger: Manual/Push. Reading from PKGBUILD..."
             PKGVER=$(grep -m 1 "^pkgver=" PKGBUILD | cut -d'=' -f2)
             PKGREL=$(grep -m 1 "^pkgrel=" PKGBUILD | cut -d'=' -f2)
 
@@ -60,7 +68,7 @@ jobs:
           REPO_FULL_VERSION="${{ env.VERSION }}-${{ env.PKGREL }}"
 
           echo "Repo version: $REPO_FULL_VERSION"
-          echo "AUR version: $AUR_FULL_VERSION"
+          echo "AUR version:  $AUR_FULL_VERSION"
 
           if [ -z "$AUR_FULL_VERSION" ] || [ "$AUR_FULL_VERSION" == "null" ]; then
             echo "Package not in AUR yet or RPC failed. Proceeding."
@@ -71,7 +79,7 @@ jobs:
             echo "SKIP_UPDATE=true" >> "$GITHUB_ENV"
 
           else
-            # Use sort -V to compare versions safely
+            # Sort -V checks if Local is NEWER than AUR
             if echo -e "${AUR_FULL_VERSION}\n${REPO_FULL_VERSION}" | sort -V -C 2>/dev/null; then
               echo "AUR version is older. Proceeding."
               echo "SKIP_UPDATE=false" >> "$GITHUB_ENV"
@@ -84,28 +92,26 @@ jobs:
       - name: Update PKGBUILD and Checksums
         if: env.SKIP_UPDATE == 'false'
         run: |
-          # We pass variables into Docker via -e
           docker run --rm \
             -v "$PWD:/src" \
             -w /src \
             -e VERSION="${{ env.VERSION }}" \
             -e IS_MANUAL="${{ env.IS_MANUAL }}" \
             archlinux:base-devel sh -c '
-              # Install necessary build tools
               pacman -Sy --noconfirm pacman-contrib git
 
-              # Update PKGBUILD only if triggered by a new release
               if [ "$IS_MANUAL" == "false" ]; then
-                echo "Updating PKGBUILD to v$VERSION"
+                echo "Release Detected: Updating PKGBUILD to v$VERSION"
                 sed -i "s/^pkgver=.*$/pkgver=$VERSION/" PKGBUILD
                 sed -i "s/^pkgrel=.*$/pkgrel=1/" PKGBUILD
+              else
+                echo "Manual/Push Detected: Keeping existing PKGBUILD values."
               fi
 
-              # Generate new checksums & generate .SRCINFO
+              # Generate new checksums & .SRCINFO
               updpkgsums
               makepkg --printsrcinfo > .SRCINFO
 
-              # Fix permissions back to the GitHub Runner user (UID 1001)
               chown -R 1001:121 .
             '
 
