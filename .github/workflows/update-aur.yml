@@ -1,5 +1,5 @@
 name: Update AUR Package
-run-name: Update AUR to ${{ github.event.release.tag_name }}
+run-name: Update AUR to ${{ github.event.release.tag_name || 'manual version' }}
 
 on:
   release:
@@ -13,100 +13,107 @@ concurrency:
   group: update-aur
   cancel-in-progress: true
 
+permissions:
+  contents: write
+
 jobs:
   aur-release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Debug Release Type
-        run: |
-          echo "Event Name: ${{ github.event_name }}"
-          echo "Release Action (Type): ${{ github.event.action }}"
-          echo "Is Prerelease: ${{ github.event.release.prerelease }}"
-
-      - name: Get Version
+      - name: Get Version and Repo Metadata
         id: get_version
         run: |
+          # Lowercase repo name
+          repo_name=$(echo "${GITHUB_REPOSITORY#*/}" | tr '[:upper:]' '[:lower:]')
+          echo "REPO_NAME=$repo_name" >> "$GITHUB_ENV"
+
+          # Extract version logic
           if [ "${{ github.event_name }}" == "release" ]; then
-            # Strip the 'v' prefix from the tag
-            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
-            echo "PKGREL=1" >> $GITHUB_ENV
-            echo "IS_MANUAL=false" >> $GITHUB_ENV
+            raw_tag="${{ github.event.release.tag_name }}"
+
+            echo "VERSION=${raw_tag#v}" >> "$GITHUB_ENV"
+            echo "PKGREL=1" >> "$GITHUB_ENV"
+            echo "IS_MANUAL=false" >> "$GITHUB_ENV"
           else
-             # For manual trigger, read from PKGBUILD
-             echo "Fetching version from PKGBUILD..."
-             PKGVER=$(grep "^pkgver=" PKGBUILD | cut -d'=' -f2)
-             PKGREL=$(grep "^pkgrel=" PKGBUILD | cut -d'=' -f2)
-             echo "VERSION=$PKGVER" >> $GITHUB_ENV
-             echo "PKGREL=$PKGREL" >> $GITHUB_ENV
-             echo "IS_MANUAL=true" >> $GITHUB_ENV
+            echo "Manual trigger: Fetching version from local PKGBUILD..."
+
+            PKGVER=$(grep -m 1 "^pkgver=" PKGBUILD | cut -d'=' -f2)
+            PKGREL=$(grep -m 1 "^pkgrel=" PKGBUILD | cut -d'=' -f2)
+
+            echo "VERSION=$PKGVER" >> "$GITHUB_ENV"
+            echo "PKGREL=$PKGREL" >> "$GITHUB_ENV"
+            echo "IS_MANUAL=true" >> "$GITHUB_ENV"
           fi
 
-      - name: Check AUR Version
-        id: check_aur_version
+      - name: Check Current AUR Version
+        id: check_aur
         run: |
-          # Get current AUR package version
-          # We want the full version string (e.g. 1.3.0-1) for comparison
-          AUR_FULL_VERSION=$(curl -s "https://aur.archlinux.org/rpc/v5/info/myctl" | \
+          # Fetch version from AUR RPC
+          AUR_FULL_VERSION=$(curl -s "https://aur.archlinux.org/rpc/v5/info/${{ env.REPO_NAME }}" | \
             jq -r '.results[0].Version // empty')
-          
+
           REPO_FULL_VERSION="${{ env.VERSION }}-${{ env.PKGREL }}"
 
           echo "Repo version: $REPO_FULL_VERSION"
           echo "AUR version: $AUR_FULL_VERSION"
 
-          # Compare versions
-          if [ -n "$AUR_FULL_VERSION" ] && [ "$AUR_FULL_VERSION" != "null" ]; then
-            if [ "$AUR_FULL_VERSION" == "$REPO_FULL_VERSION" ]; then
-              echo "AUR version is already at $REPO_FULL_VERSION. Skipping update."
-              echo "SKIP_UPDATE=true" >> $GITHUB_ENV
-            elif echo -e "${AUR_FULL_VERSION}\n${REPO_FULL_VERSION}" | sort -V -C 2>/dev/null; then
-              echo "AUR version ($AUR_FULL_VERSION) is older than repo version ($REPO_FULL_VERSION). Proceeding with update."
-              echo "SKIP_UPDATE=false" >> $GITHUB_ENV
-            else
-              echo "AUR version ($AUR_FULL_VERSION) is newer than repo version ($REPO_FULL_VERSION). Skipping update."
-              echo "SKIP_UPDATE=true" >> $GITHUB_ENV
-            fi
+          if [ -z "$AUR_FULL_VERSION" ] || [ "$AUR_FULL_VERSION" == "null" ]; then
+            echo "Package not in AUR yet or RPC failed. Proceeding."
+            echo "SKIP_UPDATE=false" >> "$GITHUB_ENV"
+
+          elif [ "$AUR_FULL_VERSION" == "$REPO_FULL_VERSION" ]; then
+            echo "AUR is up to date. Skipping."
+            echo "SKIP_UPDATE=true" >> "$GITHUB_ENV"
+
           else
-            echo "Could not fetch AUR version or package doesn't exist, proceeding with update"
-            echo "SKIP_UPDATE=false" >> $GITHUB_ENV
+            # Use sort -V to compare versions safely
+            if echo -e "${AUR_FULL_VERSION}\n${REPO_FULL_VERSION}" | sort -V -C 2>/dev/null; then
+              echo "AUR version is older. Proceeding."
+              echo "SKIP_UPDATE=false" >> "$GITHUB_ENV"
+            else
+              echo "AUR version is newer (Local downgrade?). Skipping."
+              echo "SKIP_UPDATE=true" >> "$GITHUB_ENV"
+            fi
           fi
 
       - name: Update PKGBUILD and Checksums
         if: env.SKIP_UPDATE == 'false'
         run: |
-          docker run --rm -v "$PWD:/src" -w /src archlinux:base-devel sh -c '
-            # 1. Install utils
-            pacman -Sy --noconfirm pacman-contrib git
+          # We pass variables into Docker via -e
+          docker run --rm \
+            -v "$PWD:/src" \
+            -w /src \
+            -e VERSION="${{ env.VERSION }}" \
+            -e IS_MANUAL="${{ env.IS_MANUAL }}" \
+            archlinux:base-devel sh -c '
+              # Install necessary build tools
+              pacman -Sy --noconfirm pacman-contrib git
 
-            # 2. Update pkgver/pkgrel in PKGBUILD only if released
-            if [ "${{ env.IS_MANUAL }}" == "false" ]; then
-               echo "Updating PKGBUILD version to ${{ env.VERSION }} and resetting pkgrel..."
-               sed -i "s/^pkgver=.*$/pkgver=${{ env.VERSION }}/" PKGBUILD
-               sed -i "s/^pkgrel=.*$/pkgrel=1/" PKGBUILD
-            else
-               echo "Manual trigger detected. Keeping PKGBUILD version as is."
-            fi
+              # Update PKGBUILD only if triggered by a new release
+              if [ "$IS_MANUAL" == "false" ]; then
+                echo "Updating PKGBUILD to v$VERSION"
+                sed -i "s/^pkgver=.*$/pkgver=$VERSION/" PKGBUILD
+                sed -i "s/^pkgrel=.*$/pkgrel=1/" PKGBUILD
+              fi
 
-            # 3. Update Checksums
-            # This will download the tarball (if validating remote source)
-            # OR just update based on local file if we changed logic. 
-            # Standard updpkgsums downloads source.
-            updpkgsums
+              # Generate new checksums & generate .SRCINFO
+              updpkgsums
+              makepkg --printsrcinfo > .SRCINFO
 
-            # 4. Generate .SRCINFO
-            makepkg --printsrcinfo > .SRCINFO
-
-            # 5. Fix Permissions
-            chown -R 1001:121 .
-          '
+              # Fix permissions back to the GitHub Runner user (UID 1001)
+              chown -R 1001:121 .
+            '
 
       - name: Publish to AUR
         if: env.SKIP_UPDATE == 'false'
         uses: KSXGitHub/github-actions-deploy-aur@v2.2.5
         with:
-          pkgname: myctl
+          pkgname: ${{ env.REPO_NAME }}
           pkgbuild: ./PKGBUILD
           commit_username: ${{ secrets.AUR_USERNAME }}
           commit_email: ${{ secrets.AUR_EMAIL }}

@@ -5,8 +5,9 @@ on:
   push:
     branches:
       - main
+    tags:
+      - "v*"
     paths:
-      - "PKGBUILD"
       - ".github/workflows/release-gh.yml"
 
   workflow_dispatch:
@@ -28,57 +29,49 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get version from PKGBUILD
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Get Repo name, Version & Changelog
         id: get_version
         run: |
-          VER=$(source PKGBUILD && echo $pkgver)
 
-          echo "VERSION=$VER" >> $GITHUB_ENV
+          # Get Repo name in lower case
+          repo_name=$(echo "${GITHUB_REPOSITORY#*/}" | tr '[:upper:]' '[:lower:]')
 
-          # 3. Check for Beta
-          if [[ "$VER" == 0* ]]; then
-            echo "IS_PRERELEASE=true" >> $GITHUB_ENV
+          # Get latest Tag & version
+          latest_tag=$(git describe --tags --abbrev=0 HEAD)
+          latest_ver=${latest_tag#v}
+
+          # Get changelog
+          changelog=$(uvx --from commitizen cz changelog "${latest_tag}..${latest_tag}" --dry-run | sed -n '/^###/,$p')
+
+          #---------- Export to github_env ------------
+
+          echo "VERSION=$latest_ver" >> "$GITHUB_ENV"
+          echo "REPO_NAME=$repo_name" >> "$GITHUB_ENV"
+          {
+            echo "CHANGELOG<<EOF"
+            echo "$changelog"
+            echo "EOF"
+          } >> "$GITHUB_ENV"
+
+          if [[ "$latest_ver" == 0* ]]; then
+            echo "IS_PRERELEASE=true" >> "$GITHUB_ENV"
           else
-            echo "IS_PRERELEASE=false" >> $GITHUB_ENV
+            echo "IS_PRERELEASE=false" >> "$GITHUB_ENV"
           fi
-
-      - name: Create & Push Tag
-        run: |
-          git config user.name "soymadip"
-
-          TAG="v${{ env.VERSION }}"
-
-          if git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "Tag $TAG already exists. Skipping tag creation."
-          else
-            echo "Creating new Tag: $TAG"
-            git tag "$TAG"
-            git push origin "$TAG"
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Generate changelog
-        uses: orhun/git-cliff-action@v4
-        id: generate_changelog
-        with:
-          config: .github/cliff.toml
-          args: --verbose --latest
-        env:
-          OUTPUT: CHANGELOG.md
-          GITHUB_REPO: ${{ github.repository }}
 
       - name: Create app tarball
-        run: |
-          tar -czf myctl-${{ env.VERSION }}.tar.gz -C app .
+        run: tar -czf ${{ env.REPO_NAME }}-${{ env.VERSION }}.tar.gz -C app .
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.VERSION }}
           name: v${{ env.VERSION }}
-          body_path: CHANGELOG.md
-          prerelease: ${{ env.IS_PRERELEASE }}
-          files: myctl-${{ env.VERSION }}.tar.gz
+          body: ${{ env.CHANGELOG }}
+          prerelease: ${{ env.IS_PRERELEASE == 'true' }}
+          files: ${{ env.REPO_NAME }}-${{ env.VERSION }}.tar.gz
         env:
-          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
