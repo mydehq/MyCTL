@@ -52,6 +52,7 @@ jobs:
           echo "REPO_NAME=$repo_name" >> "$GITHUB_ENV"
           {
             echo "CHANGELOG<<EOF"
+            echo "## Whats New?"
             echo "$changelog"
             echo "EOF"
           } >> "$GITHUB_ENV"
