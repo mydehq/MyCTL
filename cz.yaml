@@ -15,7 +15,9 @@ commitizen:
       - "\u23E9\uFE0E Performance"
       - "\u23E9\uFE0E Refactor"
       - "\u23E9\uFE0E Documentation"
-    commit_parser: '(?i)^(?P<change_type>feat|fix|perf|refactor|docs)(?:\((?P<scope>(?!.*(readme|cz|cliff|aur|pkgbuild|ci)).*)\))?: (?!.*(readme|cz|cliff|aur|pkgbuild|ci))(?P<message>.*)$'
+    commit_parser:
+      '(?i)^(?P<change_type>feat|fix|perf|refactor|docs)(?:\((?P<scope>(?!.*(readme|cz|cliff|aur|pkgbuild|ci)).*)\))?:
+      (?!.*(readme|cz|cliff|aur|pkgbuild|ci))(?P<message>.*)$'
     message_template:
       "{{change_type}}{% if scope %}({{scope}}){% endif %}: {{message}}{%
       if body %}
