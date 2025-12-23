@@ -24,7 +24,10 @@ permissions:
 jobs:
   aur-release:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    if: |
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
+      (github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'chore(release):')) ||
+      (github.event_name == 'workflow_dispatch')
 
     steps:
       - name: Checkout repository
@@ -35,24 +38,19 @@ jobs:
       - name: Get Version and Repo Metadata
         id: get_version
         run: |
-          # Lowercase repo name
           repo_name=$(echo "${GITHUB_REPOSITORY#*/}" | tr '[:upper:]' '[:lower:]')
           echo "REPO_NAME=$repo_name" >> "$GITHUB_ENV"
 
           if [ "${{ github.event_name }}" == "workflow_run" ]; then
-            echo "Trigger: Release Completed. extracting tag..."
-            # For workflow_run, 'head_branch' contains the tag name (e.g. v1.2.0)
+            echo "Trigger: Release Completed. Extracting tag..."
             raw_tag="${{ github.event.workflow_run.head_branch }}"
-
             echo "VERSION=${raw_tag#v}" >> "$GITHUB_ENV"
             echo "PKGREL=1" >> "$GITHUB_ENV"
             echo "IS_MANUAL=false" >> "$GITHUB_ENV"
           else
-
             echo "Trigger: Manual/Push. Reading from PKGBUILD..."
             PKGVER=$(grep -m 1 "^pkgver=" PKGBUILD | cut -d'=' -f2)
             PKGREL=$(grep -m 1 "^pkgrel=" PKGBUILD | cut -d'=' -f2)
-
             echo "VERSION=$PKGVER" >> "$GITHUB_ENV"
             echo "PKGREL=$PKGREL" >> "$GITHUB_ENV"
             echo "IS_MANUAL=true" >> "$GITHUB_ENV"
@@ -61,7 +59,6 @@ jobs:
       - name: Check Current AUR Version
         id: check_aur
         run: |
-          # Fetch version from AUR RPC
           AUR_FULL_VERSION=$(curl -s "https://aur.archlinux.org/rpc/v5/info/${{ env.REPO_NAME }}" | \
             jq -r '.results[0].Version // empty')
 
@@ -73,13 +70,10 @@ jobs:
           if [ -z "$AUR_FULL_VERSION" ] || [ "$AUR_FULL_VERSION" == "null" ]; then
             echo "Package not in AUR yet or RPC failed. Proceeding."
             echo "SKIP_UPDATE=false" >> "$GITHUB_ENV"
-
           elif [ "$AUR_FULL_VERSION" == "$REPO_FULL_VERSION" ]; then
             echo "AUR is up to date. Skipping."
             echo "SKIP_UPDATE=true" >> "$GITHUB_ENV"
-
           else
-            # Sort -V checks if Local is NEWER than AUR
             if echo -e "${AUR_FULL_VERSION}\n${REPO_FULL_VERSION}" | sort -V -C 2>/dev/null; then
               echo "AUR version is older. Proceeding."
               echo "SKIP_UPDATE=false" >> "$GITHUB_ENV"
@@ -104,14 +98,13 @@ jobs:
                 echo "Release Detected: Updating PKGBUILD to v$VERSION"
                 sed -i "s/^pkgver=.*$/pkgver=$VERSION/" PKGBUILD
                 sed -i "s/^pkgrel=.*$/pkgrel=1/" PKGBUILD
-              else
-                echo "Manual/Push Detected: Keeping existing PKGBUILD values."
               fi
 
-              # Generate new checksums & .SRCINFO
+              # Generate new checksums and .SRCINFO
               updpkgsums
               makepkg --printsrcinfo > .SRCINFO
 
+              # Fix permissions for the GitHub runner user (UID 1001)
               chown -R 1001:121 .
             '
 
