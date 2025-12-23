@@ -20,7 +20,7 @@
 #=================== Check for sudo ==================
 
 if [[ -n "$SUDO_USER" ]]; then
-    echo -e "\n\033[0;31mDo not run $0 with sudo.\033[0m"
+    echo -e "\n\033[0;31mDo not run $(basename "$0") with sudo Privilages.\033[0m"
     exit 1
 fi
 
