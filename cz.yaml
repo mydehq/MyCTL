@@ -89,5 +89,5 @@ commitizen:
   - .github/scripts/bump-pkgbuild.sh
   tag_format: v$version
   update_changelog_on_bump: false
-  version: 1.6.3
+  version: 1.6.4
   version_scheme: semver
