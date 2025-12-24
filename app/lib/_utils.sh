@@ -174,7 +174,7 @@ _print_help_cmds() {
 # TODO:
 #       default file support
 #       default value support
-read-conf() {
+read-hconf() {
     local key_name raw_value final_value \
           hypr_file="${2:-$MYDE_CONF}"
 

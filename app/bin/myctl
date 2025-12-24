@@ -156,7 +156,7 @@ case "$1" in
                 ;;
             hconf)
                 shift
-                cmd_map[cmd]="get conf"
+                cmd_map[cmd]="get hconf"
                 read-hconf "$1"
                 ;;
             cursor)
@@ -585,7 +585,7 @@ case "$1" in
                 open-tui "$@"
                 ;;
             'wifi-menu')
-                eval "$(self get conf wifi_menu)"
+                eval "$(self get hconf wifi_menu)"
                 ;;
             wobar)
                 shift
