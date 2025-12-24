@@ -52,8 +52,12 @@ jobs:
           echo "REPO_NAME=$repo_name" >> "$GITHUB_ENV"
           {
             echo "CHANGELOG<<EOF"
-            echo "## Whats New?"
-            echo "$changelog"
+            if [[ -n "$changelog" ]]; then
+              echo "## Whats New?"
+              echo "$changelog"
+            else
+              echo "No changes to note."
+            fi
             echo "EOF"
           } >> "$GITHUB_ENV"
 
