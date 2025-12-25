@@ -15,6 +15,15 @@
 # ~/.local/lib   - /usr/lib
 # ~/.local/src   - /usr/src
 # ~/.local/share - /usr/share
+#
+#
+# Dirs:
+#   LIB_DIRS:
+#       - $HOME/.local/lib/myctl
+#       - /usr/lib/myctl
+#   SRC_DIRS:
+#       - $HOME/.local/src/myctl
+#       - /usr/src/myctl
 
 
 #=================== Check for sudo ==================
@@ -26,11 +35,13 @@ fi
 
 # ======================== Config ===========================
 
+INSTALL_DIRS=(
+    "$HOME/.local"
+    "/usr/local"
+)
+
 MYDE_DIR="$HOME/MyDE"
 MYDE_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/mydehq/myde.conf"
-LIB_DIR="$HOME/.local/lib/myctl"
-SRC_DIR="$HOME/.local/src/myctl"
-PLUGIN_DIRS="/usr/share/myctl/plugins:$HOME/.local/share/myctl/plugins"
 
 LOG_MIN_LEVEL="info"
 LOG_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/myde"
@@ -43,14 +54,29 @@ MAX_MIC=$MAX_VOLUME
 
 THIS_PATH="$(realpath "${BASH_SOURCE[0]}")"
 
-# Detect if this is a system-wide installation
-if [[ "$THIS_PATH" == "/usr/bin/myctl" ]]; then
-    LIB_DIR="/usr/lib/myctl"
-    SRC_DIR="/usr/src/myctl"
 if [[ -d "$MYDE_DIR" ]] && [[ -d "$MYDE_DIR"/dots ]]; then
     INSIDE_MYDE=true
 else
     INSIDE_MYDE=false
+fi
+
+# Set LIB_DIR & SRC_DIR
+for install_dir in "${INSTALL_DIRS[@]}"; do
+
+    _lib_dir="${install_dir}/lib/myctl"
+    _src_dir="${install_dir}/src/myctl"
+
+    if [[ -d "$_lib_dir" ]] && [[ -d "$_src_dir" ]]; then
+        LIB_DIR="$_lib_dir"
+        SRC_DIR="$_src_dir"
+        break
+    fi
+done
+unset _lib_dir _src_dir
+
+if [[ -z "$LIB_DIR" ]] || [[ -z "$SRC_DIR" ]]; then
+    echo -e "\033[0;31mError: Couldn't find LIB_DIR or SRC_DIR.\033[0m" >&2
+    exit 1
 fi
 
 declare -x  LOG_MIN_LEVEL MAX_VOLUME MAX_MIC LOG_FILE
