@@ -18,12 +18,19 @@
 #
 #
 # Dirs:
+#   CONF_FILES:
+#       - ${XDG_CONFIG_HOME:-$HOME/.config}/mydehq/myctl.yml
+#       - /etc/xdg/myctl/myctl.yml
 #   LIB_DIRS:
 #       - $HOME/.local/lib/myctl
 #       - /usr/lib/myctl
 #   SRC_DIRS:
 #       - $HOME/.local/src/myctl
 #       - /usr/src/myctl
+#   PLUGIN_DIRS:
+#       - $XDG_DATA_HOME/myctl/plugins
+#       - /usr/share/myctl/plugins
+#       - /usr/local/share/myctl/plugins
 
 
 #=================== Check for sudo ==================
