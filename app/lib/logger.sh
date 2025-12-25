@@ -38,10 +38,10 @@ _log_caller() {
     local i=1
     local caller_file caller_func
 
-    # Find the first caller outside of logger.sh and _utils.sh
+    # Find the first caller outside of logger.sh and utils.sh
     while [[ -n "${BASH_SOURCE[$i]}" ]]; do
         case "${BASH_SOURCE[$i]}" in
-            */logger.sh|*/_utils.sh)
+            */logger.sh|*/utils.sh)
                 ((i++))
                 ;;
             *)
@@ -325,9 +325,9 @@ _log() {
     if [ -n "$LOG_FILE" ]; then
 
         # Create directory if it doesn't exist
-        if [ ! -d "$LOG_DIR" ]; then
-            if ! mkdir -p "$LOG_DIR"; then
-                _elog "Couldn't create log directory at '$LOG_DIR'. Log not saved."
+        if [ ! -d "$CACHE_DIR" ]; then
+            if ! mkdir -p "$CACHE_DIR"; then
+                _elog "Couldn't create cache directory at '$CACHE_DIR'. Log not saved."
                 return $return_code
             fi
         fi
@@ -343,7 +343,7 @@ _log() {
         # Write to log file
         if [ -w "$LOG_FILE" ]; then
             timestamp="$(date +"%y-%m-%d %H:%M:%S")"
-            echo -e "[$timestamp] $(_tab)${icon} ${message}" >> "$LOG_FILE"
+            echo -e "[$timestamp] ${icon} ${message}" >> "$LOG_FILE"
         else
             _elog "Log file at '$LOG_FILE' is not writable. Log not saved."
         fi
