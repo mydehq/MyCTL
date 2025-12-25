@@ -45,6 +45,12 @@ jobs:
             echo "Trigger: Release Completed. Extracting tag from head_branch..."
             # For workflow_run, head_branch usually contains the tag/branch name that triggered the parent
             RAW_TAG="${{ github.event.workflow_run.head_branch }}"
+
+            if [[ "$RAW_TAG" == "main" ]]; then
+              echo "Run triggered by main branch. Resolving version via git tags..."
+              RAW_TAG=$(git describe --tags --abbrev=0)
+            fi
+
             # Strip 'v' prefix if present
             CLEAN_VERSION="${RAW_TAG#v}"
             echo "VERSION=$CLEAN_VERSION" >> "$GITHUB_ENV"
