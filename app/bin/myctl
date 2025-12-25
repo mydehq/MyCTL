@@ -42,12 +42,15 @@ MAX_MIC=$MAX_VOLUME
 #========================== Main Logic =========================
 
 THIS_PATH="$(realpath "${BASH_SOURCE[0]}")"
-INSIDE_MYDE="$({ [ -d "$MYDE_DIR" ] && [ -d "$MYDE_DIR"/dots ]; } && echo true || echo false)"
 
 # Detect if this is a system-wide installation
 if [[ "$THIS_PATH" == "/usr/bin/myctl" ]]; then
     LIB_DIR="/usr/lib/myctl"
     SRC_DIR="/usr/src/myctl"
+if [[ -d "$MYDE_DIR" ]] && [[ -d "$MYDE_DIR"/dots ]]; then
+    INSIDE_MYDE=true
+else
+    INSIDE_MYDE=false
 fi
 
 declare -x  LOG_MIN_LEVEL MAX_VOLUME MAX_MIC LOG_FILE
