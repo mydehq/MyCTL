@@ -16,22 +16,6 @@
 # ~/.local/src   - /usr/src
 # ~/.local/share - /usr/share
 #
-#
-# Dirs:
-#   CONF_FILES:
-#       - ${XDG_CONFIG_HOME:-$HOME/.config}/mydehq/myctl.yml
-#       - /etc/xdg/myctl/myctl.yml
-#   LIB_DIRS:
-#       - $HOME/.local/lib/myctl
-#       - /usr/lib/myctl
-#   SRC_DIRS:
-#       - $HOME/.local/src/myctl
-#       - /usr/src/myctl
-#   PLUGIN_DIRS:
-#       - $XDG_DATA_HOME/myctl/plugins
-#       - /usr/share/myctl/plugins
-#       - /usr/local/share/myctl/plugins
-
 
 #=================== Check for sudo ==================
 
@@ -60,7 +44,13 @@ MAX_MIC=$MAX_VOLUME
 
 #========================== Main Logic =========================
 
-THIS_PATH="$(realpath "${BASH_SOURCE[0]}")"
+
+#----------- This binary's path -------------
+
+THIS_FILE="$(realpath "${BASH_SOURCE[0]}")"
+THIS_DIR="$(dirname "$THIS_FILE")"
+
+
 
 if [[ -d "$MYDE_DIR" ]] && [[ -d "$MYDE_DIR"/dots ]]; then
     INSIDE_MYDE=true
@@ -89,7 +79,7 @@ fi
 
 declare -x  LOG_MIN_LEVEL MAX_VOLUME MAX_MIC LOG_FILE
 declare -rx MYDE_DIR MYDE_CONF INSIDE_MYDE \
-            THIS_PATH LIB_DIR SRC_DIR CACHE_DIR
+            THIS_FILE THIS_DIR LIB_DIR SRC_DIR CACHE_DIR
 
 # Dictionaries
 declare -A cmd_map IMPORTED_LIBS
