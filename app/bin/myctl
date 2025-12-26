@@ -9,14 +9,6 @@
 #  A powerful CLI to control your Linux Desktop
 
 
-# ~/.config/myde - /etc/myde
-# ~/.cache/myde  - /var/cache/myde
-# ~/.local/bin   - /usr/bin
-# ~/.local/lib   - /usr/lib
-# ~/.local/src   - /usr/src
-# ~/.local/share - /usr/share
-#
-
 #=================== Check for sudo ==================
 
 if [[ -n "$SUDO_USER" ]]; then
@@ -45,11 +37,19 @@ MAX_MIC=$MAX_VOLUME
 #========================== Main Logic =========================
 
 
+#--------- Enable alias expansion --------
+shopt -s expand_aliases
+
+
+#-------- Error logger ----------
+_elog() {
+    echo -e "\033[0;31m✗ $1\033[0m" >&2
+}
+
 #----------- This binary's path -------------
 
 THIS_FILE="$(realpath "${BASH_SOURCE[0]}")"
 THIS_DIR="$(dirname "$THIS_FILE")"
-
 
 #--------- Detect MyDE installation ----------
 
@@ -62,6 +62,7 @@ fi
 
 #--------- Set LIB_DIR & SRC_DIR -----------
 
+# For extracted tarball
 _lib_dir="$THIS_DIR/../lib"
 _src_dir="$THIS_DIR/../src"
 
@@ -85,7 +86,7 @@ fi
 unset _lib_dir _src_dir
 
 if [[ -z "$LIB_DIR" ]] || [[ -z "$SRC_DIR" ]]; then
-    echo -e "\033[0;31mError: Couldn't find a valid myctl installation.\033[0m" >&2
+    _elog "FATAL: Couldn't find a valid myctl installation."
     exit 1
 fi
 
@@ -93,19 +94,21 @@ declare -x  LOG_MIN_LEVEL MAX_VOLUME MAX_MIC LOG_FILE
 declare -rx MYDE_DIR MYDE_CONF INSIDE_MYDE \
             THIS_FILE THIS_DIR LIB_DIR SRC_DIR CACHE_DIR
 
-# Dictionaries
 declare -A cmd_map IMPORTED_LIBS
 
-# Make Log directory, Log file
+#--------- Make Log dir, Log file ----------
 ! [ -d "$CACHE_DIR" ] && mkdir -p "$CACHE_DIR"
 ! [ -f "$LOG_FILE" ] && touch "$LOG_FILE"
 
+
+#------------ Source Components ----------
 # shellcheck source=/dev/null
 { source "$LIB_DIR"/utils.sh && IMPORTED_LIBS[$(realpath "$LIB_DIR"/utils.sh)]=1; } || {
     echo "FATAL: Failed to source Utils" >&2
     exit 1
 }
 
+#--------- Exit if no arguments provided ----------
 [[ "$#" -eq 0 ]] && {
     self help
     exit 1
