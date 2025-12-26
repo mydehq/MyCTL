@@ -1,5 +1,6 @@
 ---
 commitizen:
+  template: .github/src/changelog.j2
   annotated_tag: true
   breaking_change_exclamation_in_title: true
   bump_message: 'chore(release): $new_version'
@@ -86,7 +87,7 @@ commitizen:
   post_bump_hooks:
   - git push origin $(git branch --show-current) --follow-tags
   pre_bump_hooks:
-  - .github/scripts/bump-pkgbuild.sh
+  - .github/src/bump-pkgbuild.sh
   tag_format: v$version
   update_changelog_on_bump: false
   version: 1.7.1
