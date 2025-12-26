@@ -45,6 +45,7 @@ fi
 INSTALL_DIRS=(
     "$HOME/.local"
     "/usr/local"
+    "/usr"
 )
 
 MYDE_DIR="$HOME/MyDE"
