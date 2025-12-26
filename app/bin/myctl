@@ -45,6 +45,7 @@ fi
 INSTALL_DIRS=(
     "$HOME/.local"
     "/usr/local"
+    "/usr"
 )
 
 MYDE_DIR="$HOME/MyDE"
@@ -98,7 +99,7 @@ declare -A cmd_map IMPORTED_LIBS
 ! [ -f "$LOG_FILE" ] && touch "$LOG_FILE"
 
   # shellcheck source=/dev/null
-{ source "$LIB_DIR"/_utils.sh && IMPORTED_LIBS[$(realpath "$LIB_DIR"/_utils.sh)]=1; } || {
+{ source "$LIB_DIR"/utils.sh && IMPORTED_LIBS[$(realpath "$LIB_DIR"/utils.sh)]=1; } || {
     echo "FATAL: Failed to source Utils"
     exit 1
 }
