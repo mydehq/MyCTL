@@ -90,6 +90,7 @@ if [[ -z "$LIB_DIR" ]] || [[ -z "$SRC_DIR" ]]; then
     exit 1
 fi
 
+#----------- Export & Read-only variables ----------
 declare -x  LOG_MIN_LEVEL MAX_VOLUME MAX_MIC LOG_FILE
 declare -rx MYDE_DIR MYDE_CONF INSIDE_MYDE \
             THIS_FILE THIS_DIR LIB_DIR SRC_DIR CACHE_DIR
@@ -103,14 +104,8 @@ declare -A cmd_map IMPORTED_LIBS
 
 #------------ Source Components ----------
 # shellcheck source=/dev/null
-{ source "$LIB_DIR"/utils.sh && IMPORTED_LIBS[$(realpath "$LIB_DIR"/utils.sh)]=1; } || {
-    echo "FATAL: Failed to source Utils" >&2
-    exit 1
-}
-
-#--------- Exit if no arguments provided ----------
-[[ "$#" -eq 0 ]] && {
-    self help
+source "$LIB_DIR"/_loader.sh || {
+    _elog "FATAL: Failed to source Components"
     exit 1
 }
 
