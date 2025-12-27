@@ -1,0 +1,27 @@
+#!/bin/env bash
+#  __  __       __  __ __  __
+# |  \/  |_   _|  \/  |  \/  |
+# | |\/| | | | | |\/| | |\/| |
+# | |  | | |_| | |  | | |  | |
+# |_|  |_|\__, |_|  |_|_|  |_|
+#         |___/
+#
+# MyCTL Module Manager (wrapper for MyCTL)
+
+
+this_dir="$( dirname "${BASH_SOURCE[0]}" )"
+local_myctl="$this_dir/myctl"
+
+# Check for myctl installation
+if [[ -f "$local_myctl" && -x "$local_myctl" ]]; then
+    myctl_bin="$local_myctl"
+elif command -v myctl &>/dev/null; then
+    myctl_bin="myctl"
+else
+    echo "Error: myctl is not installed." >&2
+    exit 1
+fi
+
+
+# Redirect command to myctl
+exec "$myctl_bin" module "$@"
