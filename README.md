@@ -53,7 +53,7 @@ Install Required dependencies:
 ```bash
 git clone https://github.com/mydehq/myctl && cd myctl
 
-bash install.sh
+bash app/bin/myctl
 ```
 
 ## Usage
