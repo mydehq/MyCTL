@@ -27,7 +27,7 @@ INSTALL_DIRS=(
 MYDE_DIR="$HOME/MyDE"
 MYDE_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/mydehq/myde.conf"
 
-LOG_MIN_LEVEL="info"
+LOG_MIN_LEVEL="${LOG_MIN_LEVEL:-info}"
 CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/myctl"
 LOG_FILE="${CACHE_DIR}/myctl.log"
 
