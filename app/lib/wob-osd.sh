@@ -5,7 +5,7 @@
 # =================== Configuration ====================#
 
  WOB_MAX_LEVEL="${WOB_MAX_LEVEL:-200}"
- WOB_INFO_FILE="${WOB_INFO_FILE:-$LOG_DIR/wob-pipe.info}"
+ WOB_INFO_FILE="${WOB_INFO_FILE:-$CACHE_DIR/wob-pipe.info}"
 
 # =================== Functions ====================#
 
