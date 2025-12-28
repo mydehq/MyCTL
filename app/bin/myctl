@@ -62,31 +62,20 @@ fi
 
 #--------- Set LIB_DIR & SRC_DIR -----------
 
-# For extracted tarball
-_lib_dir="$THIS_DIR/../lib"
-_src_dir="$THIS_DIR/../src"
+for base in "${INSTALL_DIRS[@]}"; do
+    if [[ -d "$base/lib/myctl" && -d "$base/src/myctl" ]]; then
+        lib_dir="$base/lib/myctl"
+        src_dir="$base/src/myctl"
+        break
+    elif [[ "$base" == "$THIS_DIR/.." ]] && [[ -d "$base/lib" && -d "$base/src" ]]; then
+        LIB_DIR="$base/lib"
+        SRC_DIR="$base/src"
+        break
+    fi
+done
 
-if [[ -d "$_lib_dir" ]] && [[ -d "$_src_dir" ]]; then
-    LIB_DIR="$_lib_dir"
-    SRC_DIR="$_src_dir"
-else
-    for install_dir in "${INSTALL_DIRS[@]}"; do
-
-        _lib_dir="${install_dir}/lib/myctl"
-        _src_dir="${install_dir}/src/myctl"
-
-        if [[ -d "$_lib_dir" ]] && [[ -d "$_src_dir" ]]; then
-            LIB_DIR="$_lib_dir"
-            SRC_DIR="$_src_dir"
-            break
-        fi
-    done
-fi
-
-unset _lib_dir _src_dir
-
-if [[ -z "$LIB_DIR" ]] || [[ -z "$SRC_DIR" ]]; then
-    _elog "FATAL: Couldn't find a valid myctl installation."
+if [[ -z "$LIB_DIR" || -z "$SRC_DIR" ]]; then
+    echo "FATAL: Couldn't find a valid myctl installation." >&2
     exit 1
 fi
 
