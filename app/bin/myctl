@@ -32,6 +32,8 @@ INSTALL_DIRS=(
     "/usr"
 )
 
+MyCTL_VER='1.9.0'
+
 MYDE_DIR="$HOME/MyDE"
 MYDE_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/mydehq/myde.conf"
 
@@ -85,7 +87,7 @@ if [[ -z "$LIB_DIR" || -z "$SRC_DIR" ]]; then
 fi
 
 declare -x  LOG_MIN_LEVEL MAX_VOLUME MAX_MIC LOG_FILE
-declare -rx MYDE_DIR MYDE_CONF INSIDE_MYDE \
+declare -rx MYCTL_VER MYDE_DIR MYDE_CONF INSIDE_MYDE \
             THIS_FILE THIS_DIR LIB_DIR SRC_DIR CACHE_DIR
 
 # Dictionaries
