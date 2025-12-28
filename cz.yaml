@@ -90,7 +90,7 @@ commitizen:
   major_version_zero: true
   name: cz_customize
   pre_bump_hooks:
-    - scripts/bump-versions.sh
+    - scripts/bumper.sh
   post_bump_hooks:
     - git push origin $(git branch --show-current) --follow-tags
   tag_format: v$version

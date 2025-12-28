@@ -1,14 +1,25 @@
 #!/bin/bash
+#
+#  ____
+# | __ ) _   _ _ __ ___  _ __   ___ _ __
+# |  _ \| | | | '_ ` _ \| '_ \ / _ \ '__|
+# | |_) | |_| | | | | | | |_) |  __/ |
+# |____/ \__,_|_| |_| |_| .__/ \___|_|
+#                      |_|
+#
+#  CZ Hook for bumping Versions
+#
 
-declare -A BUMP_FILES
+declare -A VERSION_FILES
 
 #================= Configuration =================
 
 NEW_VERSION="${1:-$CZ_PRE_NEW_VERSION}"
 
-BUMP_FILES=(
+VERSION_FILES=(
     ["PKGBUILD"]="s/^ *pkgver=.*/pkgver={{new_version}}/; s/^ *pkgrel=.*/pkgrel=1/"
     ["app/bin/myctl"]="s/^MYCTL_VER=.*/MYCTL_VER='{{new_version}}'/"
+    ["install.sh"]="s/^VERSION=.*/VERSION='{{new_version}}'/"
 )
 
 #==================== Helpers ======================
@@ -40,6 +51,13 @@ has-cmd() {
 
 #==================== Main Logic ======================
 
+#--------------- Check for pwd --------------
+
+if [[ "$(basename "$(pwd)" | tr '[:upper:]' '[:lower:]')" != "$MYCTL_DIR" ]]; then
+    log.error "Please run this script from the Root of the project"
+    exit 1
+fi
+
 #--------- Check if version was passed --------
 if [ -z "$NEW_VERSION" ]; then
     log.error "Error: No version argument provided."
@@ -53,13 +71,13 @@ has-cmd sed git || {
 }
 log.success "Required Commands Available: git sed\n"
 
-for file in "${!BUMP_FILES[@]}"; do
+for file in "${!VERSION_FILES[@]}"; do
     if [[ ! -f "$file" ]]; then
         log.error "File not found: $file"
         exit 1
     fi
 
-    regex="${BUMP_FILES[$file]}"
+    regex="${VERSION_FILES[$file]}"
     regex="${regex//'{{new_version}}'/$NEW_VERSION}"
 
     log.info "Bumping file: $file"
@@ -71,11 +89,11 @@ for file in "${!BUMP_FILES[@]}"; do
     fi
 done
 
-log.success "Successfully Bumped '${!BUMP_FILES[*]}'\n"
+log.success "Successfully Bumped '${!VERSION_FILES[*]}'\n"
 
 #----------- Stage Files ----------
 log.info "Staging files"
-git add "${!BUMP_FILES[@]}" || {
+git add "${!VERSION_FILES[@]}" || {
     log.error "Failed to stage files"
     exit 1
 }
