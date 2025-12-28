@@ -42,15 +42,10 @@ export TUI_PIN_FLOAT_NEEDED_MSG
 #
 open-tui() {
     local exec_cmd cmd_bin \
-          terminal_cmd="${TERMINAL:-wezterm start}" terminal_bin term_class \
+          terminal_cmd="${TERMINAL:-wezterm start}" terminal_bin term_class class_arg=""\
           float_win=false  float_cmd="${TUI_FLOAT_CMD:-hyprctl dispatch setfloating}" float_result \
           pin_win=false pin_result pin_cmd="${TUI_PIN_CMD:-hyprctl dispatch pin}" \
           pin_need_float_msg="${TUI_PIN_FLOAT_NEEDED_MSG:-Window does not qualify to be pinned}"
-
-   [[ $# -eq 0 ]] && {
-       log.error "No arguments provided."
-       return 1
-   }
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -96,12 +91,6 @@ open-tui() {
     log.debug "Using terminal: $terminal_bin"
 
     # Validate required arguments
-    if [[ -z "$exec_cmd" ]]; then
-        log.error "No command specified to execute. Use -e/--exec or pass the command after '--'."
-        help-menu
-        return 1
-    fi
-
     if ! command -v "$terminal_bin" >/dev/null 2>&1; then
         log.error "Terminal '$terminal_bin' not found in PATH."
         help-menu
@@ -111,7 +100,15 @@ open-tui() {
     [[ -z "$term_class" ]] && term_class="$cmd_bin"
     log.debug "Term class: $term_class"
 
-    exec_cmd="${terminal_cmd} --class $term_class -e $exec_cmd"
+    [[ -n "$term_class" ]] && class_arg="--class $term_class"
+
+    if [[ -n "$exec_cmd" ]]; then
+        exec_cmd="${terminal_cmd} $class_arg -e $exec_cmd"
+    else
+        log.error -n "No command specified to open.\nOpening Terminal"
+        exec_cmd="${terminal_cmd} $class_arg"
+    fi
+
     log.debug "Final command: $exec_cmd"
 
     $exec_cmd >/dev/null 2>&1 & disown || {
