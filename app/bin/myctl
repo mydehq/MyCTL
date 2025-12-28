@@ -66,17 +66,18 @@ _elog() {
 
 #--------- Set LIB_DIR & SRC_DIR -----------
 
-for base in "${INSTALL_DIRS[@]}"; do
-    if [[ -d "$base/lib/myctl" && -d "$base/src/myctl" ]]; then
-        lib_dir="$base/lib/myctl"
-        src_dir="$base/src/myctl"
-        break
-    elif [[ "$base" == "$THIS_DIR/.." ]] && [[ -d "$base/lib" && -d "$base/src" ]]; then
-        LIB_DIR="$base/lib"
-        SRC_DIR="$base/src"
-        break
-    fi
-done
+if [[ -f "$THIS_DIR/../lib/utils.sh" && -d "$THIS_DIR/../src" ]]; then
+    LIB_DIR="$THIS_DIR/../lib"
+    SRC_DIR="$THIS_DIR/../src"
+else
+    for base in "${INSTALL_DIRS[@]}"; do
+        if [[ -d "$base/lib/myctl" && -d "$base/src/myctl" ]]; then
+            LIB_DIR="$base/lib/myctl"
+            SRC_DIR="$base/src/myctl"
+            break
+        fi
+    done
+fi
 
 if [[ -z "$LIB_DIR" || -z "$SRC_DIR" ]]; then
     _elog "FATAL: Couldn't find a valid myctl installation."

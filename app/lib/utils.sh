@@ -70,7 +70,7 @@ alias shift-arg='shift && [ -n "$1" ]'
 #------------------
 
 self() {
-    "$THIS_PATH" "$@"
+    "$THIS_FILE" "$@"
 }
 
 #---------------
