@@ -10,6 +10,8 @@ license=('GPL3')
 sha256sums=('SKIP')
 
 depends=(
+  'curl'
+  'tar'
   'bash'
   'gawk'
   'sed'

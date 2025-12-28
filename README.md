@@ -42,6 +42,8 @@ sudo pacman -U myctl-*.pkg.tar.zst
 
 Install Required dependencies:
 
+- `curl` - Download utility
+- `tar` - Archive utility
 - `bash` - Shell interpreter
 - `gawk` - Text processing
 - `sed` - Stream editor
@@ -54,6 +56,7 @@ Install Required dependencies:
 git clone https://github.com/mydehq/myctl && cd myctl
 
 ./app/bin/myctl
+
 ```
 
 ## Usage
