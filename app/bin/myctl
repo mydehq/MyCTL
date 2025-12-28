@@ -32,7 +32,7 @@ INSTALL_DIRS=(
     "/usr"
 )
 
-MyCTL_VER='1.9.0'
+MYCTL_VER='1.9.0'
 
 MYDE_DIR="$HOME/MyDE"
 MYDE_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/mydehq/myde.conf"
@@ -120,6 +120,7 @@ case "$1" in
             [reload]="Reload MyDE configuration"
             [set]="Set configuration options (not yet implemented)"
             [show]="Show various utility dialougs"
+            [version]="Show MyCTL version"
         )
         help-menu
         ;;
@@ -649,6 +650,12 @@ case "$1" in
                 exit 1
                 ;;
         esac
+        ;;
+
+    # ==================== version ====================
+    version|ver|-v|--version)
+        echo "MyCTL v$MYCTL_VER"
+        exit 0
         ;;
 
     # ==================== default ====================
