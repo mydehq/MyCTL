@@ -121,8 +121,8 @@ log.success "Successfully bumped '${!VERSION_FILES[*]}'\n"
 
 #----------- Stage Files ----------
 log.info "Staging files"
-git add "${!VERSION_FILES[@]}" || {
-    log.error "Failed to stage files"
-    exit 1
-}
+# git add "${!VERSION_FILES[@]}" || {
+#     log.error "Failed to stage files"
+#     exit 1
+# }
 log.success "All files are updated & staged.\n"
