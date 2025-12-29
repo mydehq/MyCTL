@@ -3,7 +3,7 @@
   <h1>MyCTL</h1>
   <p><b>A powerful CLI to control your Linux Desktop</b></p>
 
-MyCTL is a cli tool that provides a unified way to control common Linux desktop operations.   
+MyCTL is a CLI tool that provides a unified way to control common Linux desktop operations.  
 While it integrates with the MyDE desktop environment, MyCTL works independently on any Linux system.
 
 </div>
@@ -16,7 +16,7 @@ While it integrates with the MyDE desktop environment, MyCTL works independently
 
 The package is available on the AUR as `myctl`:
 
-#### 1. Using AUR helper
+#### 1. Using AUR Helper
 
 ```bash
 # Using an AUR helper (e.g., yay, paru)
