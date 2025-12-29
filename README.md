@@ -53,10 +53,7 @@ Install Required dependencies:
 - `wireplumber` - For volume control
 
 ```bash
-git clone https://github.com/mydehq/myctl && cd myctl
-
-./app/bin/myctl
-
+curl -fsSL https://raw.githubusercontent.com/mydehq/MyCTL/refs/heads/main/scripts/install.sh | bash
 ```
 
 ## Usage
