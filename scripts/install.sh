@@ -5,7 +5,7 @@ set -e
 #-------- Configuration --------
 
 PROJ_NAME='myctl'
-VERSION='1.9.0'
+VERSION='1.10.0'
 
 TARBALL_NAME="${PROJ_NAME,,}-${VERSION}.tar.gz"
 DOWNLOAD_URL="https://github.com/mydehq/$PROJ_NAME/releases/download/v${VERSION}/${TARBALL_NAME}"
