@@ -7,7 +7,8 @@
 # |____/ \__,_|_| |_| |_| .__/ \___|_|
 #                      |_|
 #
-#  CZ Hook for bumping Versions
+#  CLI tool for bumping Versions easily
+#  Can Be use as Commitizen Hook too
 #
 
 declare -A VERSION_FILES
@@ -17,9 +18,9 @@ declare -A VERSION_FILES
 NEW_VERSION="${1:-$CZ_PRE_NEW_VERSION}"
 
 VERSION_FILES=(
-    ["PKGBUILD"]="s/^ *pkgver=.*/pkgver={{new_version}}/; s/^ *pkgrel=.*/pkgrel=1/"
-    ["app/bin/myctl"]="s/^MYCTL_VER=.*/MYCTL_VER='{{new_version}}'/"
-    ["install.sh"]="s/^VERSION=.*/VERSION='{{new_version}}'/"
+    ["PKGBUILD"]="^ *pkgver=.* > pkgver={{new_version}} ; ^ *pkgrel=.* > pkgrel=1"
+    ["app/bin/myctl"]="^MYCTL_VER=.* > MYCTL_VER='{{new_version}}'"
+    ["scripts/install.sh"]="^VERSION=.* > VERSION='{{new_version}}'"
 )
 
 #==================== Helpers ======================
@@ -49,20 +50,27 @@ has-cmd() {
   return "$exit_code"
 }
 
+# Escape special characters for sed inside double quotes with ~ delimiter
+escape_sed() {
+    local var="$1"
+    # Escape backslashes first, then others
+    var="${var//\\/\\\\}"
+    var="${var//\~/\\~}"
+    var="${var//\"/\\\"}"
+    var="${var//\$/\\\$}"
+    var="${var//\`/\\\`}"
+    echo -n "$var"
+}
+
 #==================== Main Logic ======================
-
-#--------------- Check for pwd --------------
-
-if [[ "$(basename "$(pwd)" | tr '[:upper:]' '[:lower:]')" != "$MYCTL_DIR" ]]; then
-    log.error "Please run this script from the Root of the project"
-    exit 1
-fi
 
 #--------- Check if version was passed --------
 if [ -z "$NEW_VERSION" ]; then
     log.error "Error: No version argument provided."
     exit 1
 fi
+
+
 
 #--------- Check Commands ------------
 has-cmd sed git || {
@@ -77,19 +85,39 @@ for file in "${!VERSION_FILES[@]}"; do
         exit 1
     fi
 
-    regex="${VERSION_FILES[$file]}"
-    regex="${regex//'{{new_version}}'/$NEW_VERSION}"
+    # Split rules by semicolon
+    IFS=';' read -ra RULES <<< "${VERSION_FILES[$file]}"
 
     log.info "Bumping file: $file"
-    if sed -i "${regex}" "$file"; then
-        printf "    "; log.success "Done"
-    else
-        log.error "Failed to update $file"
-        exit 1
-    fi
+    
+    for rule in "${RULES[@]}"; do
+        # Split by > for Search > Replace
+        search="${rule%%>*}"
+        replace="${rule#*>}"
+
+        # Trim optional one surrounding space
+        search="${search% }"
+        replace="${replace# }"
+        
+        # Substitute version placeholder
+        replace="${replace//'{{new_version}}'/$NEW_VERSION}"
+
+        # Escape for sed
+        safe_search="$(escape_sed "$search")"
+        safe_replace="$(escape_sed "$replace")"
+
+        if sed -i -E "s~${safe_search}~${safe_replace}~" "$file"; then
+            :
+        else
+            log.error "Failed to update pattern '$search' in $file"
+            exit 1
+        fi
+    done
+    log.success "Done"
 done
 
-log.success "Successfully Bumped '${!VERSION_FILES[*]}'\n"
+echo
+log.success "Successfully bumped '${!VERSION_FILES[*]}'\n"
 
 #----------- Stage Files ----------
 log.info "Staging files"
@@ -97,7 +125,4 @@ git add "${!VERSION_FILES[@]}" || {
     log.error "Failed to stage files"
     exit 1
 }
-
-#------------ Done ---------------
-echo
 log.success "All files are updated & staged.\n"

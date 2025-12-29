@@ -89,10 +89,10 @@ commitizen:
     - $version
   major_version_zero: true
   name: cz_customize
-  pre_bump_hooks:
-    - scripts/bumper.sh
   post_bump_hooks:
     - git push origin $(git branch --show-current) --follow-tags
+  pre_bump_hooks:
+    - scripts/bumper.sh
   tag_format: v$version
   template: .github/src/changelog.j2
   update_changelog_on_bump: false
