@@ -58,7 +58,7 @@ curl -fsSL https://raw.githubusercontent.com/mydehq/MyCTL/refs/heads/main/script
 
 ## Usage
 
-For Usage & Configuration, visit [Documentation](https://mydehq.github.io/mywiki/docs/user-guide/myctl)
+For Usage & Configuration, visit [Documentation](https://mydehq.github.io/docs/user-guide/myctl)
 
 ## Related Resources
 
