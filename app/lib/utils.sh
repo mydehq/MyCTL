@@ -176,6 +176,7 @@ _print_help_cmds() {
 #       default value support
 read-hconf() {
     local key_name raw_value final_value \
+          awk_parser="$SRC_DIR/parse-hconf.awk" \
           hypr_file="${2:-$MYDE_CONF}"
 
     [[ -z "$1" ]] && {
@@ -190,14 +191,13 @@ read-hconf() {
         return 1
     }
 
+    [[ ! -f "$awk_parser" ]] && {
+        log.error "Error: Awk parser not found at $awk_parser"
+        return 1
+    }
+
     # Find the key & Extract Value
-    raw_value=$(awk -F'=' -v key="$key_name" '
-      $0 ~ key && /^\s*\$/ {
-        sub(/#.*/, "", $2)               # Remove comments from the value
-        gsub(/^[ \t]+|[ \t]+$/, "", $2)  # Trim leading/trailing whitespace
-        print $2                         # Print the trimmed value
-      }
-    ' "$hypr_file")
+    raw_value=$(awk -v target="$key_name" -f "$awk_parser" "$hypr_file")
 
     [[ -z "$raw_value" ]] && {
         log.error "Error: Key not found: $key_name"
@@ -210,7 +210,6 @@ read-hconf() {
     # Return Result
     echo "$final_value"
 }
-
 #----------------
 
 has-cmd() {
