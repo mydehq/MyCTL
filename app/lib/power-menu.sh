@@ -90,7 +90,7 @@ show-power-menu() {
 
     lock-cmd() {
         sleep 0.3
-        loginctl lock-session
+        loginctl lock-session self
     }
 
     shutdown-cmd() {
@@ -103,7 +103,7 @@ show-power-menu() {
 
     suspend-cmd() {
         playerctl pause
-        lock-cmd
+        lock-cmd && sleep 0.3
         systemctl suspend
     }
 
@@ -121,20 +121,24 @@ show-power-menu() {
     }
 
     logout-cmd() {
-        case "$DESKTOP_SESSION" in
-            'plasma')
+        if has-cmd loginctl; then
+            loginctl terminate-session self
+        else
+            case "$DESKTOP_SESSION" in
+                'plasma')
                 qdbus6 org.kde.ksmserver /KSMServer logout 0 0 0
                 ;;
-            'gnome')
+                'gnome')
                 gnome-session-quit --logout --no-prompt
                 ;;
-            *-uwsm)
+                *-uwsm)
                 uwsm stop
                 ;;
-            'hyprland')
+                'hyprland')
                 hyprctl dispatch exit
                 ;;
-        esac
+            esac
+        fi
     }
 
     #========================== Main Logic =========================
