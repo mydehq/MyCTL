@@ -4,6 +4,9 @@
   <p><b>Architectural overhaul of MyCTL — A high-performance Linux desktop controller</b></p>
 </div>
 
+> [!INFO]
+> Development shifted to https://github.com/mydehq/myctl-next
+
 MyCTL is a CLI tool built on a **Lean Client / Fat Server** architecture. A tiny Go binary proxies all commands to a persistent Python daemon, enabling zero-latency CLI response times, deep system integration, and a self-bootstrapping plugin ecosystem.
 
 ## Architecture
